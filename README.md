@@ -18,16 +18,13 @@ Naša aplikacija će omogućiti korisnicima da filtriraju restorane prema razli�
 
 #Instalcija
 # Članovi tima 
-Ivan Gabrilo - ivan.gabrilo@fer.unizg.hr
-Karlo Kus - karlo.kus@fer.unizg.hr
-Nina Majetić - nina.majetic@fer.unizg.hr
-Petar Marčinko - petar.marcinko@fer.unizg.hr
-Noa Zvonimir Paić - noa.paic@fer.unizg.hr
-Matej Samaržija - matej.samarzija@fer.unizg.hr
-Matej Šest - matej.sest@fer.unizg.hr
-
-# Kontribucije
->Pravila ovise o organizaciji tima i su često izdvojena u CONTRIBUTING.md
+- Ivan Gabrilo - ivan.gabrilo@fer.unizg.hr
+- Karlo Kus - karlo.kus@fer.unizg.hr
+- Nina Majetić - nina.majetic@fer.unizg.hr
+- Petar Marčinko - petar.marcinko@fer.unizg.hr
+- Noa Zvonimir Paić - noa.paic@fer.unizg.hr
+- Matej Samaržija - matej.samarzija@fer.unizg.hr
+- Matej Šest - matej.sest@fer.unizg.hr
 
 
 
@@ -36,17 +33,6 @@ Kao studenti sigurno ste upoznati s minimumom prihvatljivog ponašanja definiran
 Očekujemo da ćete poštovati [etički kodeks IEEE-a](https://www.ieee.org/about/corporate/governance/p7-8.html) koji ima važnu obrazovnu funkciju sa svrhom postavljanja najviših standarda integriteta, odgovornog ponašanja i etičkog ponašanja u profesionalnim aktivnosti. Time profesionalna zajednica programskih inženjera definira opća načela koja definiranju  moralni karakter, donošenje važnih poslovnih odluka i uspostavljanje jasnih moralnih očekivanja za sve pripadnike zajenice.
 
 Kodeks ponašanja skup je provedivih pravila koja služe za jasnu komunikaciju očekivanja i zahtjeva za rad zajednice/tima. Njime se jasno definiraju obaveze, prava, neprihvatljiva ponašanja te  odgovarajuće posljedice (za razliku od etičkog kodeksa). U ovom repozitoriju dan je jedan od široko prihvačenih kodeks ponašanja za rad u zajednici otvorenog koda.
->### Poboljšajte funkcioniranje tima:
->* definirajte načina na koji će rad biti podijeljen među članovima grupe
->* dogovorite kako će grupa međusobno komunicirati.
->* ne gubite vrijeme na dogovore na koji će grupa rješavati sporove primjenite standarde!
->* implicitno podrazmijevamo da će svi članovi grupe slijediti kodeks ponašanja.
- 
->###  Prijava problema
->Najgore što se može dogoditi je da netko šuti kad postoje problemi. Postoji nekoliko stvari koje možete učiniti kako biste najbolje riješili sukobe i probleme:
->* Obratite mi se izravno [e-pošta](mailto:vlado.sruk@fer.hr) i  učinit ćemo sve što je u našoj moći da u punom povjerenju saznamo koje korake trebamo poduzeti kako bismo riješili problem.
->* Razgovarajte s vašim asistentom jer ima najbolji uvid u dinamiku tima. Zajedno ćete saznati kako riješiti sukob i kako izbjeći daljnje utjecanje u vašem radu.
->* Ako se osjećate ugodno neposredno razgovarajte o problemu. Manje incidente trebalo bi rješavati izravno. Odvojite vrijeme i privatno razgovarajte s pogođenim članom tima te vjerujte u iskrenost.
 
 # 📝 Licenca
 Važeča (1)
