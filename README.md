@@ -5,7 +5,7 @@ Ovaj projekt je reultat timskog rada u sklopu projeknog zadatka kolegija [Progra
 
 Kratko opisati cilj Vašeg projekta. Vaša motivacija?  (Napomena: odgovor nije »Zato što je to bio zadatak i nismo imali ideje za drugo.«). Koji problem rješavate?
 
-Cilj našeg projekta je izrada web aplikacije koja će pomoći svima u Zagrebu u pronalasku resorana i hrane po njihovom ukusu.
+Cilj našeg projekta je izrada web aplikacije koja će pomoći svima u Zagrebu u pronalasku restorana i hrane po njihovom ukusu.
 Bilo turist ili stanovnik grada Zagreba, svima je u interesu osim da posjete atraktivne lokacije i kulturne znamenitosti također i probati dobru hranu. 
 Opcije koje nudi naša aplikacija ujedinjuju sve informacije na jednom mjestu, čineći proces odabira restorana brzim i jednostavnim.
 Naša aplikacija će omogućiti korisnicima da filtriraju restorane prema različitim kriterijima kao što su vrsta kuhinje, cijena, lokacija i ocjene drugih korisnika.
