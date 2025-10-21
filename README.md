@@ -1,22 +1,14 @@
 # RestoraniZEGE
 
 # Opis projekta
-Ovaj projekt je reultat timskog rada u sklopu projeknog zadatka kolegija [Programsko inženjerstvo](https://www.fer.unizg.hr/predmet/proinz) na Fakultetu elektrotehnike i računarstva Sveučilišta u Zagrebu. 
-
-Kratko opisati cilj Vašeg projekta. Vaša motivacija?  (Napomena: odgovor nije »Zato što je to bio zadatak i nismo imali ideje za drugo.«). Koji problem rješavate?
-
 Cilj našeg projekta je izrada web aplikacije koja će pomoći svima u Zagrebu u pronalasku restorana i hrane po njihovom ukusu.
 Bilo turist ili stanovnik grada Zagreba, svima je u interesu osim da posjete atraktivne lokacije i kulturne znamenitosti također i probati dobru hranu. 
 Opcije koje nudi naša aplikacija ujedinjuju sve informacije na jednom mjestu, čineći proces odabira restorana brzim i jednostavnim.
 Naša aplikacija će omogućiti korisnicima da filtriraju restorane prema različitim kriterijima kao što su vrsta kuhinje, cijena, lokacija i ocjene drugih korisnika.
 
-# Funkcijski zahtjevi
-> Navedite ključne zahtjeve Vašeg projekta.
-
-
 # Tehnologije
+>Instalcija
 
-#Instalcija
 # Članovi tima 
 - Ivan Gabrilo - ivan.gabrilo@fer.unizg.hr
 - Karlo Kus - karlo.kus@fer.unizg.hr
@@ -25,8 +17,6 @@ Naša aplikacija će omogućiti korisnicima da filtriraju restorane prema razli�
 - Noa Zvonimir Paić - noa.paic@fer.unizg.hr
 - Matej Samaržija - matej.samarzija@fer.unizg.hr
 - Matej Šest - matej.sest@fer.unizg.hr
-
-
 
 # 📝 Kodeks ponašanja [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
 Kao studenti sigurno ste upoznati s minimumom prihvatljivog ponašanja definiran u [KODEKS PONAŠANJA STUDENATA FAKULTETA ELEKTROTEHNIKE I RAČUNARSTVA SVEUČILIŠTA U ZAGREBU](https://www.fer.hr/_download/repository/Kodeks_ponasanja_studenata_FER-a_procisceni_tekst_2016%5B1%5D.pdf), te dodatnim naputcima za timski rad na predmetu [Programsko inženjerstvo](https://wwww.fer.hr).
@@ -40,11 +30,6 @@ Važeča (1)
 
 Ovaj repozitorij sadrži otvoreni obrazovni sadržaji (eng. Open Educational Resources)  i licenciran je prema pravilima Creative Commons licencije koja omogućava da preuzmete djelo, podijelite ga s drugima uz 
 uvjet da navođenja autora, ne upotrebljavate ga u komercijalne svrhe te dijelite pod istim uvjetima [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License HR][cc-by-nc-sa].
->
-> ### Napomena:
->
-> Svi paketi distribuiraju se pod vlastitim licencama.
-> Svi upotrijebleni materijali  (slike, modeli, animacije, ...) distribuiraju se pod vlastitim licencama.
 
 [![CC BY-NC-SA 4.0][cc-by-nc-sa-image]][cc-by-nc-sa]
 
@@ -53,9 +38,6 @@ uvjet da navođenja autora, ne upotrebljavate ga u komercijalne svrhe te dijelit
 [cc-by-nc-sa-shield]: https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg
 
 Orginal [![cc0-1.0][cc0-1.0-shield]][cc0-1.0]
->
->COPYING: All the content within this repository is dedicated to the public domain under the CC0 1.0 Universal (CC0 1.0) Public Domain Dedication.
->
 [![CC0-1.0][cc0-1.0-image]][cc0-1.0]
 
 [cc0-1.0]: https://creativecommons.org/licenses/by/1.0/deed.en
