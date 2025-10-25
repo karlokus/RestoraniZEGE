@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import "../css/Login.css";
 
 function Login() {
@@ -72,7 +72,7 @@ function Login() {
         </form>
 
         <div className="links">
-          <a className="muted" href="#">Nemate račun? Registrirajte se</a>
+          <Link className="muted" to="/register">Nemate račun? Registrirajte se</Link>
           <a className="muted" href="#">Zaboravili ste lozinku?</a>
         </div>
       </div>
