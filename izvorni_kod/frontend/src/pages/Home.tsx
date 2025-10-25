@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import RestaurantCard, { type Restaurant } from "../components/RestaurantCard"
+import userImg from "../assets/user.png"
 import "../css/Home.css"
 
 function Home() {
@@ -59,7 +60,10 @@ function Home() {
          <header>
             <div className="header-things">
                <h3 className="header-title">RestoraniZEGE</h3>
-               <a className="login-button" href="/login">Prijavi se</a>
+               <div className="header-right">
+                  <img src={userImg} alt="User avatar" className="user-avatar" />
+                  <a className="login-button" href="/login">Prijavi se</a>
+               </div>
             </div>
          </header>
          <main>
