@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import "../css/Register.css";
 
 function Register() {
-  const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");

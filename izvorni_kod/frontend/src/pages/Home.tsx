@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuthContext } from "../contexts/AuthContext";
 import { useFavoritesContext } from "../contexts/FavoritesContext";
 import { useEventsContext } from "../contexts/EventsContext";
 import RestaurantCard, { type Restaurant } from "../components/RestaurantCard"
 import userImg from "../assets/user.png"
 import "../css/Home.css"
+import chefImg from "../assets/chef.png";
 
 function Home() {
    const { user, isAuthenticated, logout } = useAuthContext();
@@ -15,7 +16,17 @@ function Home() {
    const [loading, setLoading] = useState(true);
    const [activeFilter, setActiveFilter] = useState<'all' | 'favorites' | 'events'>('all');
    const [showDropdown, setShowDropdown] = useState(false);
-   const [dropdownTimeout, setDropdownTimeout] = useState<number | null>(null);
+   const hideTimer = useRef<number | null>(null);
+
+   // ispisuje inicijale imena i prezimena korisnika
+   const inicijali = (() => {
+      const full = (user?.name || user?.username || "").trim();
+      if (!full) return "";
+      const dijelovi = full.split(/\s+/);
+      const ime = dijelovi[0]?.[0] ?? "";
+      const prez = dijelovi.length > 1 ? dijelovi[dijelovi.length - 1][0] : (dijelovi[0]?.[1] ?? "");
+      return (ime + prez).toUpperCase();
+   })();
 
    const restaurants: Array<Restaurant> = [
       {
@@ -68,43 +79,60 @@ function Home() {
       await logout();
    }
 
-   const handleMouseEnter = () => {
-      if (dropdownTimeout) {
-         clearTimeout(dropdownTimeout);
-         setDropdownTimeout(null);
+   const clearHideTimer = () => {
+      if (hideTimer.current) {
+         window.clearTimeout(hideTimer.current);
+         hideTimer.current = null;
       }
+   };
+
+   const handleMouseEnter = () => {
+      clearHideTimer();
       setShowDropdown(true);
    };
 
    const handleMouseLeave = () => {
-      const timeout = window.setTimeout(() => {
-         setShowDropdown(false);
-      }, 2000); // 2 seconds delay
-      setDropdownTimeout(timeout);
+      clearHideTimer();
+      hideTimer.current = window.setTimeout(() => setShowDropdown(false), 100);
    };
 
    return (
       <div className="home">
          <header>
             <div className="header-things">
-               <h3 className="header-title">RestoraniZEGE</h3>
+               <div className="brand-wrap">
+                  <span className="header-title">RestoraniZEGE</span>
+                  <span className="brand-sub">ZAGREB</span>
+               </div>
+
+               <div className="header-center">
+                  <img className="header-img chef" src={chefImg} alt="Chef" />
+               </div>
+
                <div className="header-right">
                   {isAuthenticated ? (
                      <>
                         <button className="favourite-btn" onClick={() => setActiveFilter('favorites')}>
                            ♥
                         </button>
-                        <img src={userImg} alt="User avatar" className="user-avatar" />
+                        {/* maknuta ikona avatara za prijavljenog korisnika */}
                         <div
                            className="user-dropdown"
                            onMouseEnter={handleMouseEnter}
                            onMouseLeave={handleMouseLeave}
                         >
-                           <a className="login-button username-link" href="/profile">
-                              {user?.name || user?.username}
+                           <a className="user-chip" href="/profile">
+                              {inicijali && (
+                                 <span className="initials-badge" aria-hidden="true">{inicijali}</span>
+                              )}
+                              <span className="user-name">{user?.name || user?.username}</span>
                            </a>
                            {showDropdown && (
-                              <div className="dropdown-content">
+                              <div
+                                className="dropdown-content"
+                                onMouseEnter={handleMouseEnter}
+                                onMouseLeave={handleMouseLeave}
+                              >
                                  <button className="logout-button" onClick={handleLogout}>
                                     Odjavi se
                                  </button>
@@ -114,7 +142,7 @@ function Home() {
                      </>
                   ) : (
                      <>
-                        <img src={userImg} alt="User avatar" className="user-avatar" />
+                        {/* za neprijavljenog prikazuj samo gumb/link za login */}
                         <a className="login-button" href="/login">Prijavi se</a>
                      </>
                   )}

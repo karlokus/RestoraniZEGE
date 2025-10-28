@@ -17,10 +17,9 @@ function Login() {
       return;
     }
 
-    // Simple client-side mock login: store a minimal user object in localStorage
+    // user se sprema u local storageu
     const user = { name: username, email: "" };
     localStorage.setItem("user", JSON.stringify(user));
-    // notify app about auth change
     window.dispatchEvent(new Event("authChanged"));
     navigate("/");
   };
