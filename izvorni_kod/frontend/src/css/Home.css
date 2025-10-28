@@ -6,7 +6,7 @@
 .header-right {
    display: flex;
    align-items: center;
-   gap: 0.75rem;
+   gap: 1rem;
 }
 
 .user-avatar {
@@ -14,7 +14,61 @@
    height: 36px;
    border-radius: 50%;
    object-fit: cover;
-   border: 2px solid rgba(0,0,0,0.05);
+   border: 2px solid rgba(0, 0, 0, 0.05);
+}
+
+.favourite-btn {
+   background: none;
+   border: none;
+   font-size: 1.5rem;
+   cursor: pointer;
+   color: #e74c3c;
+   transition: transform 0.2s;
+   padding: 0.5rem;
+}
+
+.favourite-btn:hover {
+   transform: scale(1.1);
+}
+
+.user-dropdown {
+   position: relative;
+   display: inline-block;
+}
+
+.username-link {
+   text-decoration: none;
+   display: block;
+   color: white;
+}
+
+.dropdown-content {
+   display: block;
+   position: absolute;
+   right: 0;
+   background-color: white;
+   min-width: 160px;
+   box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+   border-radius: 8px;
+   z-index: 1000;
+   margin-top: 0.5rem;
+   overflow: hidden;
+}
+
+.logout-button {
+   width: 100%;
+   padding: 0.75rem 1rem;
+   border: none;
+   background: none;
+   cursor: pointer;
+   text-align: left;
+   font-size: 0.9rem;
+   transition: background-color 0.2s;
+   color: #333;
+}
+
+.logout-button:hover {
+   background-color: #f5f5f5;
 }
 
 /* Header */
@@ -67,8 +121,9 @@ main {
 .search-filter {
    display: flex;
    gap: 1rem;
-   margin-bottom: 3rem;
-   align-items: center;
+   margin: 2rem auto;
+   max-width: 800px;
+   padding: 0 1rem;
 }
 
 .search-form {
@@ -79,18 +134,15 @@ main {
 
 .search-input {
    flex: 1;
-   padding: 0.8rem 1.2rem;
-   border: 1px solid #d0d0d0;
+   padding: 0.75rem 1rem;
+   border: 1px solid #ddd;
    border-radius: 8px;
-   font-size: 0.95rem;
-   background-color: white;
-   transition: all 0.3s ease;
+   font-size: 1rem;
 }
 
 .search-input:focus {
    outline: none;
-   border-color: var(--accent-color);
-   box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+   border-color: #3d2514;
 }
 
 .search-input::placeholder {
@@ -98,38 +150,36 @@ main {
 }
 
 .search-button {
-   padding: 0.8rem 2rem;
-   background-color: var(--accent-color);
+   padding: 0.75rem 1.5rem;
+   background-color: #3d2514;
    color: white;
    border: none;
    border-radius: 8px;
-   font-weight: 500;
    cursor: pointer;
-   transition: all 0.3s ease;
+   font-size: 1rem;
+   transition: background-color 0.3s;
 }
 
 .search-button:hover {
-   background-color: #333;
-   transform: translateY(-1px);
+   background-color: #2d1a0a;
 }
 
 .filters {
+   padding: 0.75rem 1.5rem;
+   background-color: #f5f5f5;
+   color: #3d2514;
+   border: none;
+   border-radius: 8px;
+   cursor: pointer;
+   font-size: 1rem;
+   text-decoration: none;
    display: flex;
    align-items: center;
-   gap: 0.5rem;
-   padding: 0.8rem 1.5rem;
-   border: 1px solid #d0d0d0;
-   border-radius: 8px;
-   background-color: white;
-   font-size: 0.95rem;
-   cursor: pointer;
-   transition: all 0.3s ease;
-   white-space: nowrap;
+   transition: background-color 0.3s;
 }
 
 .filters:hover {
-   border-color: var(--accent-color);
-   background-color: #fafafa;
+   background-color: #e5e5e5;
 }
 
 .filters::before {
@@ -139,41 +189,78 @@ main {
 
 /* Hero section */
 .home-txt {
-   background-color: white;
-   padding: 4rem 3rem;
-   border-radius: var(--border-radius);
    text-align: center;
-   margin-bottom: 3rem;
-   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+   margin: 3rem auto;
+   max-width: 700px;
 }
 
 .home-txt h1 {
    font-size: 2.5rem;
    font-weight: 700;
    margin-bottom: 1rem;
-   line-height: 1.2;
+   color: #2d1a0a;
 }
 
 .bottom-txt {
    font-size: 1.1rem;
-   color: var(--text-secondary);
-   font-weight: 400;
+   color: #666;
+   line-height: 1.6;
    margin: 0;
 }
 
-/* Restaurant grid section */
-h2 {
-   font-size: 1.3rem;
+/* Section Headings */
+main h2 {
+   font-size: 1.8rem;
    font-weight: 600;
-   margin-bottom: 2rem;
-   margin-top: 2rem;
+   margin: 2rem 0 1.5rem 0;
+   color: #2d1a0a;
 }
 
+/* Filter Buttons for Authenticated Users */
+.filter-welcome {
+   display: flex;
+   gap: 0;
+   margin: 2rem 0 1.5rem 0;
+   justify-content: flex-start;
+   padding: 0 1rem;
+}
+
+.filter-button {
+   padding: 0.75rem 2rem;
+   border: none;
+   background-color: #3d2514;
+   color: white;
+   cursor: pointer;
+   font-size: 1rem;
+   font-weight: 500;
+   transition: all 0.2s ease;
+   border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.filter-button:first-child {
+   border-radius: 25px 0 0 25px;
+}
+
+.filter-button:last-child {
+   border-radius: 0 25px 25px 0;
+   border-right: none;
+}
+
+.filter-button:hover {
+   background-color: #2d1a0a;
+}
+
+.filter-button.active {
+   background-color: #1a0f06;
+}
+
+/* Restaurant grid section */
 .restaurant-grid {
    display: grid;
    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
    gap: 2rem;
-   margin-bottom: 3rem;
+   margin: 2rem 0;
+   padding: 0 1rem;
 }
 
 /* Responsive design */
@@ -209,7 +296,7 @@ h2 {
    }
 
    .home-txt h1 {
-      font-size: 1.8rem;
+      font-size: 2rem;
    }
 
    .bottom-txt {
@@ -219,6 +306,15 @@ h2 {
    .restaurant-grid {
       grid-template-columns: 1fr;
       gap: 1.5rem;
+   }
+
+   .filter-welcome {
+      flex-direction: column;
+      align-items: stretch;
+   }
+
+   .filter-button {
+      width: 100%;
    }
 }
 

@@ -1,13 +1,21 @@
 import { useState, useEffect } from "react";
+import { useAuthContext } from "../contexts/AuthContext";
+import { useFavoritesContext } from "../contexts/FavoritesContext";
+import { useEventsContext } from "../contexts/EventsContext";
 import RestaurantCard, { type Restaurant } from "../components/RestaurantCard"
 import userImg from "../assets/user.png"
 import "../css/Home.css"
 
 function Home() {
-
+   const { user, isAuthenticated, logout } = useAuthContext();
+   const { isFavorite } = useFavoritesContext();
+   const { getUpcomingEvents } = useEventsContext();
    const [searchQuery, setSearchQuery] = useState("");
    const [error, setError] = useState(null);
    const [loading, setLoading] = useState(true);
+   const [activeFilter, setActiveFilter] = useState<'all' | 'favorites' | 'events'>('all');
+   const [showDropdown, setShowDropdown] = useState(false);
+   const [dropdownTimeout, setDropdownTimeout] = useState<number | null>(null);
 
    const restaurants: Array<Restaurant> = [
       {
@@ -36,6 +44,7 @@ function Home() {
        loadPopularRestaurants();
     }, []);
  */
+
    const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       if (!searchQuery.trim()) return;
@@ -55,14 +64,60 @@ function Home() {
       */
    }
 
+   const handleLogout = async () => {
+      await logout();
+   }
+
+   const handleMouseEnter = () => {
+      if (dropdownTimeout) {
+         clearTimeout(dropdownTimeout);
+         setDropdownTimeout(null);
+      }
+      setShowDropdown(true);
+   };
+
+   const handleMouseLeave = () => {
+      const timeout = window.setTimeout(() => {
+         setShowDropdown(false);
+      }, 2000); // 2 seconds delay
+      setDropdownTimeout(timeout);
+   };
+
    return (
       <div className="home">
          <header>
             <div className="header-things">
                <h3 className="header-title">RestoraniZEGE</h3>
                <div className="header-right">
-                  <img src={userImg} alt="User avatar" className="user-avatar" />
-                  <a className="login-button" href="/login">Prijavi se</a>
+                  {isAuthenticated ? (
+                     <>
+                        <button className="favourite-btn" onClick={() => setActiveFilter('favorites')}>
+                           ♥
+                        </button>
+                        <img src={userImg} alt="User avatar" className="user-avatar" />
+                        <div
+                           className="user-dropdown"
+                           onMouseEnter={handleMouseEnter}
+                           onMouseLeave={handleMouseLeave}
+                        >
+                           <a className="login-button username-link" href="/profile">
+                              {user?.name || user?.username}
+                           </a>
+                           {showDropdown && (
+                              <div className="dropdown-content">
+                                 <button className="logout-button" onClick={handleLogout}>
+                                    Odjavi se
+                                 </button>
+                              </div>
+                           )}
+                        </div>
+                     </>
+                  ) : (
+                     <>
+                        <img src={userImg} alt="User avatar" className="user-avatar" />
+                        <a className="login-button" href="/login">Prijavi se</a>
+                     </>
+                  )}
                </div>
             </div>
          </header>
@@ -80,14 +135,72 @@ function Home() {
                <a className="filters" href="/filter">Filtri</a>
             </div>
             <div className="home-txt">
-               <h1>Otkrijte najbolje restorane Zagreba</h1>
-               <p className="bottom-txt">Autentična iskustva, moderna kuhinja i tradicija na jednom mjestu</p>
+               {isAuthenticated ? (
+                  <>
+                     <h1>Dobrodošli natrag, {user?.name?.split(' ')[0] || user?.username}!</h1>
+                     <p className="bottom-txt">Pronađite svoje omiljene restorane i ne propustite nijedno novo događanje</p>
+                  </>
+               ) : (
+                  <>
+                     <h1>Otkrijte najbolje restorane Zagreba</h1>
+                     <p className="bottom-txt">Autentična iskustva, moderna kuhinja i tradicija na jednom mjestu</p>
+                  </>
+               )}
             </div>
-            <h2>Istaknuti restorani</h2>
-            <div className="restaurant-grid">
-               {restaurants.map((restaurant: Restaurant) =>
-                  restaurant.name.toLowerCase().startsWith(searchQuery) && < RestaurantCard key={restaurant.id} restaurant={restaurant} />)}
-            </div>
+            {isAuthenticated ? (
+               <>
+                  <div className="filter-welcome">
+                     <button
+                        className={`filter-button ${activeFilter === 'all' ? 'active' : ''}`}
+                        onClick={() => setActiveFilter('all')}
+                     >
+                        Svi restorani
+                     </button>
+                     <button
+                        className={`filter-button ${activeFilter === 'favorites' ? 'active' : ''}`}
+                        onClick={() => setActiveFilter('favorites')}
+                     >
+                        Omiljeni
+                     </button>
+                     <button
+                        className={`filter-button ${activeFilter === 'events' ? 'active' : ''}`}
+                        onClick={() => setActiveFilter('events')}
+                     >
+                        Događaji
+                     </button>
+                  </div>
+                  <h2>
+                     {activeFilter === 'all' && 'Svi restorani'}
+                     {activeFilter === 'favorites' && 'Omiljeni restorani'}
+                     {activeFilter === 'events' && 'Događaji'}
+                  </h2>
+                  <div className="restaurant-grid">
+                     {restaurants
+                        .filter((restaurant: Restaurant) => {
+                           const matchesSearch = restaurant.name.toLowerCase().includes(searchQuery.toLowerCase());
+                           if (activeFilter === 'favorites') {
+                              return matchesSearch && isFavorite(restaurant.id);
+                           }
+                           if (activeFilter === 'events') {
+                              return matchesSearch && getUpcomingEvents().some(event => event.restaurantId === restaurant.id);
+                           }
+                           return matchesSearch;
+                        })
+                        .map((restaurant: Restaurant) => (
+                           <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+                        ))
+                     }
+                  </div>
+               </>
+            ) : (
+               <>
+                  <h2>Istaknuti restorani</h2>
+                  <div className="restaurant-grid">
+                     {restaurants.map((restaurant: Restaurant) =>
+                        restaurant.name.toLowerCase().startsWith(searchQuery) && <RestaurantCard key={restaurant.id} restaurant={restaurant} />)}
+                  </div>
+               </>
+            )}
          </main>
       </div>
    );
