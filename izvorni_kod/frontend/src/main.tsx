@@ -6,6 +6,7 @@ import App from './App.tsx'
 import { AuthProvider } from './contexts/AuthContext.tsx'
 import { FavoritesProvider } from './contexts/FavoritesContext.tsx'
 import { EventsProvider } from './contexts/EventsContext.tsx'
+import { NotificationsProvider } from './contexts/NotificationsContext.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -13,7 +14,9 @@ createRoot(document.getElementById('root')!).render(
       <AuthProvider>
         <FavoritesProvider>
           <EventsProvider>
-            <App />
+            <NotificationsProvider>
+              <App />
+            </NotificationsProvider>
           </EventsProvider>
         </FavoritesProvider>
       </AuthProvider>

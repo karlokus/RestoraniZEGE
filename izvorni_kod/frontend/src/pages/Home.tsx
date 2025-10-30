@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useAuthContext } from "../contexts/AuthContext";
 import { useFavoritesContext } from "../contexts/FavoritesContext";
 import { useEventsContext } from "../contexts/EventsContext";
+import { useNotificationsContext } from "../contexts/NotificationsContext";
 import RestaurantCard, { type Restaurant } from "../components/RestaurantCard"
 import userImg from "../assets/user.png"
 import "../css/Home.css"
@@ -11,12 +12,15 @@ function Home() {
    const { user, isAuthenticated, logout } = useAuthContext();
    const { isFavorite } = useFavoritesContext();
    const { getUpcomingEvents } = useEventsContext();
+   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotificationsContext();
    const [searchQuery, setSearchQuery] = useState("");
    const [error, setError] = useState(null);
    const [loading, setLoading] = useState(true);
    const [activeFilter, setActiveFilter] = useState<'all' | 'favorites' | 'events'>('all');
    const [showDropdown, setShowDropdown] = useState(false);
+   const [showNotifications, setShowNotifications] = useState(false);
    const hideTimer = useRef<number | null>(null);
+   const notifTimer = useRef<number | null>(null);
 
    // ispisuje inicijale imena i prezimena korisnika
    const inicijali = (() => {
@@ -96,6 +100,36 @@ function Home() {
       hideTimer.current = window.setTimeout(() => setShowDropdown(false), 100);
    };
 
+   const clearNotifTimer = () => {
+      if (notifTimer.current) {
+         window.clearTimeout(notifTimer.current);
+         notifTimer.current = null;
+      }
+   };
+
+   const handleNotifMouseEnter = () => {
+      clearNotifTimer();
+      setShowNotifications(true);
+   };
+
+   const handleNotifMouseLeave = () => {
+      clearNotifTimer();
+      notifTimer.current = window.setTimeout(() => setShowNotifications(false), 100);
+   };
+
+   const formatTimestamp = (timestamp: string) => {
+      const date = new Date(timestamp);
+      const now = new Date();
+      const diff = now.getTime() - date.getTime();
+      const minutes = Math.floor(diff / 60000);
+      const hours = Math.floor(diff / 3600000);
+      const days = Math.floor(diff / 86400000);
+
+      if (minutes < 60) return `${minutes}m ago`;
+      if (hours < 24) return `${hours}h ago`;
+      return `${days}d ago`;
+   };
+
    return (
       <div className="home">
          <header>
@@ -112,6 +146,57 @@ function Home() {
                <div className="header-right">
                   {isAuthenticated ? (
                      <>
+                        <div
+                           className="notification-wrapper"
+                           onMouseEnter={handleNotifMouseEnter}
+                           onMouseLeave={handleNotifMouseLeave}
+                        >
+                           <button className="bell-btn" onClick={() => setActiveFilter('events')}>
+                              🔔
+                              {unreadCount > 0 && (
+                                 <span className="notification-badge">{unreadCount}</span>
+                              )}
+                           </button>
+                           {showNotifications && (
+                              <div className="notifications-dropdown">
+                                 <div className="notifications-header">
+                                    <h3>Obavijesti</h3>
+                                    {unreadCount > 0 && (
+                                       <button
+                                          className="mark-all-read"
+                                          onClick={markAllAsRead}
+                                       >
+                                          Označi sve kao pročitano
+                                       </button>
+                                    )}
+                                 </div>
+                                 <div className="notifications-list">
+                                    {notifications.length === 0 ? (
+                                       <div className="no-notifications">Nema novih obavijesti</div>
+                                    ) : (
+                                       notifications.map(notification => (
+                                          <div
+                                             key={notification.id}
+                                             className={`notification-item ${notification.read ? 'read' : 'unread'}`}
+                                             onClick={() => markAsRead(notification.id)}
+                                          >
+                                             <div className="notification-content">
+                                                <h4>{notification.title}</h4>
+                                                <p>{notification.message}</p>
+                                                <span className="notification-time">
+                                                   {formatTimestamp(notification.timestamp)}
+                                                </span>
+                                             </div>
+                                             {!notification.read && (
+                                                <span className="unread-dot"></span>
+                                             )}
+                                          </div>
+                                       ))
+                                    )}
+                                 </div>
+                              </div>
+                           )}
+                        </div>
                         <button className="favourite-btn" onClick={() => setActiveFilter('favorites')}>
                            ♥
                         </button>
@@ -129,9 +214,9 @@ function Home() {
                            </a>
                            {showDropdown && (
                               <div
-                                className="dropdown-content"
-                                onMouseEnter={handleMouseEnter}
-                                onMouseLeave={handleMouseLeave}
+                                 className="dropdown-content"
+                                 onMouseEnter={handleMouseEnter}
+                                 onMouseLeave={handleMouseLeave}
                               >
                                  <button className="logout-button" onClick={handleLogout}>
                                     Odjavi se
