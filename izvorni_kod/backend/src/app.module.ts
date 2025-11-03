@@ -3,19 +3,24 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from './users/entities/user.entity';
+import { RestaurantsModule } from './restaurants/restaurants.module';
+import { Restaurant } from './restaurants/entities/restaurant.entity';
 
 @Module({
   imports: [
     UsersModule,
-    TypeOrmModule.forRoot({
+    RestaurantsModule,
+    TypeOrmModule.forRoot({   //todo -> migrations, .env, async
       type: 'postgres',
-      host: 'localhost',        // ili IP ako koristiš Docker
+      host: 'localhost',
       port: 5432,
-      username: 'postgres',     // tvoje korisničko ime
-      password: 'bazepodataka',      // tvoja lozinka
-      database: 'RestoraniZEGE', // ime baze
-      autoLoadEntities: true,   // automatski učitava sve entitete registrirane u modulu
-      synchronize: true,        // samo za razvoj! automatski kreira tablice prema entitetima
+      username: 'postgres',
+      password: 'bazepodataka',
+      database: 'RestoraniZEGE',
+      //autoLoadEntities: true,
+      entities: [User, Restaurant],
+      synchronize: true,
     }),
   ],
   controllers: [AppController],

@@ -7,7 +7,7 @@ export class CreateUserDto {
     @MaxLength(96)
     username: string;
 
-    @IsEmail()
+    @IsEmail()              // todo -> unique
     @IsNotEmpty()
     @MaxLength(96)
     email: string;
@@ -16,9 +16,9 @@ export class CreateUserDto {
     @IsNotEmpty()
     @MinLength(8)
     @MaxLength(96)
-    @Matches(/((?=.\d)(?=.[a-z])(?=.[A-Z])(?=.[\W]).{8,64})/, {
+    /*@Matches(/((?=.\d)(?=.[a-z])(?=.[A-Z])(?=.[\W]).{8,64})/, {                      // todo -> password
         message: 'password too weak',
-    }) // at least one upper case, one lower case, one number, one special character regex
+    }) // at least one upper case, one lower case, one number, one special character regex*/
     password: string;
 
     @IsEnum(UserRole)

@@ -1,9 +1,10 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Exclude } from 'class-transformer';
-import { UserRole } from './enums/userRole.enum';
+import { UserRole } from '../enums/userRole.enum';
+import { Restaurant } from 'src/restaurants/entities/restaurant.entity';
 
 @Entity()
-export class UserEntity {
+export class User {
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -11,6 +12,7 @@ export class UserEntity {
         type: 'varchar',
         length: 96,
         nullable: false,
+        unique: false,
     })
     username: string;
 
@@ -43,5 +45,10 @@ export class UserEntity {
         nullable: false,
         default: UserRole.user,
     })
-    userRole: UserRole;
+    role: UserRole;
+
+    @OneToMany(() => Restaurant, (restaurant) => restaurant.user, {
+        eager: true,
+    })
+    restaurant: Restaurant[];
 }
