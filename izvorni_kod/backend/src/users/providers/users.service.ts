@@ -8,6 +8,8 @@ import { UpdateUserDto } from "../dtos/update-user.dto";
 import { User } from "../entities/user.entity";
 import { FindUserProvider } from "./find-user.provider";
 import { AuthService } from "src/auth/providers/auth.service";
+import { CreateUserProvider } from "./create-user.provider";
+import { UpdateUserProvider } from "./update-user.provider";
 
 @Injectable()
 export class UsersService {
@@ -18,8 +20,9 @@ export class UsersService {
 
         private readonly findUserProvider: FindUserProvider,
 
-        @Inject(forwardRef(() => AuthService))
-        private readonly authService: AuthService,
+        private readonly createUserProvider: CreateUserProvider,
+
+        private readonly updateUserProvider: UpdateUserProvider,
     ) {}
 
     public async getAllUsers() {
@@ -31,89 +34,11 @@ export class UsersService {
     }
 
     public async createUser(createUserDto: CreateUserDto) {
-        let user: User | null;
-        
-        /* nadi mi usera s emailom koji je dosao na endpoint */
-        try {
-            user = await this.findUserProvider.findOneByEmail(createUserDto.email);
-        } catch (error) {
-            const errMessage = (error as Error).message;
-            throw new RequestTimeoutException(
-                'Unable to process your request at the moment, please try later',
-                {
-                    description: 'Error connecting to the database, error message: ' + errMessage,
-                },
-            );
-        }
-
-        /* ako user postoji nemozemo ga opet kreirati */
-        if (user) {
-            throw new BadRequestException('User already exists, please check your email.');
-        }
-        const newUser = this.usersRepository.create(createUserDto);
-
-        /* kreiraj usera */
-        try {
-            return await this.usersRepository.save(newUser);
-        } catch (error: unknown) {
-            const errMessage = (error as Error).message;
-            if (error instanceof Error && 'detail' in error) {
-                const detail = (error as { detail: string }).detail;
-                if (detail.includes('email')) {
-                    throw new ConflictException('Email must be unique');
-                }
-            }
-            throw new RequestTimeoutException(
-                'Unable to process your request at the moment, please try later',
-                {
-                    description: 'Error connecting to the database, error message: ' + errMessage,
-                },
-            );
-        }
+        return this.createUserProvider.createUser(createUserDto);
     }
 
     public async updateUser(updateUserDto: UpdateUserDto, id: number) {
-        let user: User | null;
-
-        /* nadi mi usera po id-u koji je dosao na endpoint */
-        try {
-            user = await this.findUserProvider.findOneById(id);
-        } catch (error) {
-            const errMessage = (error as Error).message;
-            throw new RequestTimeoutException(
-                'Unable to process your request at the moment, please try later',
-                {
-                    description: 'Error connecting to the database, error message: ' + errMessage,
-                },
-            );
-        }
-
-        /* ako user ne postoji nemožemo ga ni mijenjat */
-        if (!user) {
-            throw new BadRequestException('User does not exist');
-        }
-
-        user.username = updateUserDto.username ?? user.username;
-        user.email = updateUserDto.email ?? user.email;
-        user.role = updateUserDto.role ?? user.role;
-
-        try {
-            await this.usersRepository.save(user);
-        } catch (error: unknown) {
-            if (error instanceof Error && 'detail' in error) {
-                const detail = (error as { detail: string }).detail;
-                if (detail.includes('email')) {
-                    throw new ConflictException('Email must be uniqqque');
-                }
-            }
-            throw new RequestTimeoutException(
-                'Unable to process your request at the moment, please try later',
-                {
-                    description: 'Error connecting to the database',
-                },
-            );
-        }
-        return user;
+        return this.updateUserProvider.updateUser(updateUserDto, id);
     }
 
     public async removeUser(id: number) {

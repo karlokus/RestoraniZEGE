@@ -1,7 +1,9 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req, SetMetadata } from '@nestjs/common';
 import { RestaurantsService } from './providers/restaurants.service';
 import { CreateRestaurantDto } from './dtos/create-restaurant.dto';
 import { UpdateRestaurantDto } from './dtos/update-restaurant.dto';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { AuthType } from 'src/auth/enums/auth-type.enum';
 
 @Controller('restaurants')
 export class RestaurantsController {
@@ -11,6 +13,7 @@ export class RestaurantsController {
     ) {}
 
     @Get()
+    @Auth(AuthType.None)
     public getAllRestaurants() {
         return this.RestaurantsService.getAllRestaurants();
     }
@@ -25,6 +28,9 @@ export class RestaurantsController {
     @Post()
     public createRestaurant(
         @Body() createRestaurantDto: CreateRestaurantDto,
+        //@Req() request,
+        //@UserPayload() user
+        //@UserPayload('email') email                               // todo -> ovo ce trebat za ostale tablice favoriti npr
     ) {
         return this.RestaurantsService.createRestaurant(createRestaurantDto);
     }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, RequestTimeoutException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
@@ -16,15 +16,43 @@ export class FindUserProvider {
         });
     }
 
-    public async findOneByEmail(email: string) {
-        return await this.usersRepository.findOneBy({
-            email: email,
-        });
+    public async findOneByEmail(email: string): Promise<User | null> {
+        let user: User | undefined | null = undefined;
+
+        try {
+            user = await this.usersRepository.findOneBy({
+                email: email,
+            });
+        } catch (error) {
+            const errMessage = (error as Error).message;
+            throw new RequestTimeoutException(
+                'Unable to process your request at the moment, please try later',
+                {
+                    description: 'Error connecting to the database, error message: ' + errMessage,
+                },
+            );
+        }
+        
+        return user;
     }
 
-    public async findOneByUsername(username: string) {
-        return await this.usersRepository.findOneBy({
-            username: username,
-        });
+    public async findOneByGoogleId(googleId: string): Promise<User | null> {
+        let user: User | undefined | null = undefined;
+
+        try {
+            user = await this.usersRepository.findOneBy({
+                googleId: googleId,
+            });
+        } catch (error) {
+            const errMessage = (error as Error).message;
+            throw new RequestTimeoutException(
+                'Unable to process your request at the moment, please try later',
+                {
+                    description: 'Error connecting to the database, error message: ' + errMessage,
+                },
+            );
+        }
+        
+        return user;
     }
 }

@@ -11,10 +11,20 @@ export class User {
     @Column({
         type: 'varchar',
         length: 96,
-        nullable: false,
+        //nullable: false,          // todo
+        nullable: true,
         unique: false,
     })
-    username: string;
+    firstName: string;
+
+    @Column({
+        type: 'varchar',
+        length: 96,
+        //nullable: false,
+        nullable: true,
+        unique: false,
+    })
+    lastName: string;
 
     @Column({
         type: 'varchar',
@@ -27,27 +37,27 @@ export class User {
     @Column({
         type: 'varchar',
         length: 96,
-        nullable: false,  // prebacit u true
+        nullable: true,  // prebacit u true
     })
-    //@Exclude() i ?
-    password: string;
+    //@Exclude() i ?        // todo
+    password?: string;
 
     @Column({
         type: 'varchar',
         nullable: true
     })
-    @Exclude()
+    //@Exclude()
     googleId?: string;
 
     @Column({
         type: 'enum',
         enum: UserRole,
         nullable: false,
-        default: UserRole.user,
+        default: UserRole.user,                                                 // todo -> maknut role
     })
     role: UserRole;
 
-    @OneToMany(() => Restaurant, (restaurant) => restaurant.user, {
+    @OneToMany(() => Restaurant, (restaurant) => restaurant.user, {             // todo -> poboljšat bazu podataka i onda dodat guardove
         eager: true,
     })
     restaurant: Restaurant[];

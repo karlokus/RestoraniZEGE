@@ -5,15 +5,20 @@ export class CreateUserDto {
     @IsString()
     @IsNotEmpty()
     @MaxLength(96)
-    username: string;
+    firstName: string;
 
-    @IsEmail()              // todo -> unique
+    @IsString()
+    @IsNotEmpty()
+    @MaxLength(96)
+    lastName: string;
+
+    @IsEmail()                                                                      // todo -> unique?
     @IsNotEmpty()
     @MaxLength(96)
     email: string;
 
     @IsString()
-    @IsNotEmpty()
+    @IsNotEmpty()                                                                       // todo -> IsOptional ???
     @MinLength(8)
     @MaxLength(96)
     /*@Matches(/((?=.\d)(?=.[a-z])(?=.[A-Z])(?=.[\W]).{8,64})/, {                      // todo -> password
