@@ -54,6 +54,8 @@ body { background-color: var(--page-bg); }
   padding: 0;
   min-height: 48px;
   position: relative;
+  overflow: hidden;
+  contain: layout;
 }
 
 .google-button-container > div {
@@ -63,6 +65,7 @@ body { background-color: var(--page-bg); }
   justify-content: center;
   align-items: center;
   margin: 0 auto;
+  position: relative;
 }
 
 /* Style the Google button iframe */
@@ -74,6 +77,11 @@ body { background-color: var(--page-bg); }
   margin: 0 auto !important;
   display: block !important;
   overflow: hidden !important;
+  position: relative !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
 .google-button-container iframe:hover {
@@ -95,12 +103,16 @@ body { background-color: var(--page-bg); }
   justify-content: center !important;
   align-items: center !important;
   margin: 0 auto !important;
+  position: relative !important;
 }
 
 /* Additional wrapper styling */
 .google-button-container > div > div > iframe {
   margin: 0 auto !important;
   display: block !important;
+  position: relative !important;
+  left: 0 !important;
+  right: 0 !important;
 }
 
 @media (max-width: 480px){ 

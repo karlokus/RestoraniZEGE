@@ -138,6 +138,8 @@ body {
   padding: 0;
   min-height: 48px;
   position: relative;
+  overflow: hidden;
+  contain: layout;
 }
 
 .google-button-container > div {
@@ -147,6 +149,7 @@ body {
   justify-content: center;
   align-items: center;
   margin: 0 auto;
+  position: relative;
 }
 
 /* Style the Google button iframe */
@@ -158,6 +161,11 @@ body {
   margin: 0 auto !important;
   display: block !important;
   overflow: hidden !important;
+  position: relative !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
 .google-button-container iframe:hover {
@@ -179,12 +187,16 @@ body {
   justify-content: center !important;
   align-items: center !important;
   margin: 0 auto !important;
+  position: relative !important;
 }
 
 /* Additional wrapper styling */
 .google-button-container > div > div > iframe {
   margin: 0 auto !important;
   display: block !important;
+  position: relative !important;
+  left: 0 !important;
+  right: 0 !important;
 }
 
 .links{
