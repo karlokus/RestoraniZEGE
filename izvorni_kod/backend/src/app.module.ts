@@ -41,6 +41,9 @@ const ENV = process.env.NODE_ENV;
         database: configService.get('database.name'),
         autoLoadEntities: configService.get('database.autoLoadEntities'),
         synchronize: configService.get('database.synchronize'),
+        ssl: {
+          rejectUnauthorized: false,
+        },
       }),
     }),
     ConfigModule.forFeature(jwtConfig),
