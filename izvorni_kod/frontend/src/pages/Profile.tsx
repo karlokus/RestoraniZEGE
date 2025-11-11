@@ -8,7 +8,7 @@ export default function Profile() {
   const navigate = useNavigate();
 
   const display = {
-    name: user?.name || user?.username || 'Korisnik',
+    name: user?.name || 'Korisnik',
     email: user?.email || '—',
     phone: (user as any)?.phone || '—',
     city: (user as any)?.city || '—',

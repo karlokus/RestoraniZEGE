@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: restoranizege-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      # VITE_GOOGLE_CLIENT_ID - POSTAVITE U RENDER DASHBOARD, NE OVDJE!
+      - key: VITE_API_BASE_URL
+        value: https://restoranizege.onrender.com
+
