@@ -29,12 +29,12 @@ export class Restaurant {                           //  todo -> provjeriti tabli
     description: string;
 
     @Column({
-        type: 'enum',
-        enum: CousineType,
+        type: 'varchar',
+        length: 96,
         nullable: true,
-        default: CousineType.bistro,
+        unique: false,
     })
-    role: CousineType;
+    role: string;                            // todo -> cousinetype
 
     @Column({
         type: 'varchar',
