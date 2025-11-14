@@ -33,6 +33,7 @@ export class AccessTokenGuard implements CanActivate {
                 this.jwtConfiguration
             );                                        // todo -> decorator ali za parametre(ne fje ili klase) da nemoramo ˇ ovak payload dohvaćat u funkciji  
             request[REQUEST_USER_KEY] = payload;      // onda mogu u controlleru doć do payloada req.user ili req[REQUEST_USER_KEY]
+            // todo request.user = payload
         } catch {
             throw new UnauthorizedException();
         }
