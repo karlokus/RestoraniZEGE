@@ -2,9 +2,9 @@
 
 # Opis projekta
 Cilj našeg projekta je izrada web aplikacije koja će pomoći svima u Zagrebu u pronalasku restorana i hrane po njihovom ukusu.
-Bilo turist ili stanovnik grada Zagreba, svima je u interesu osim da posjete atraktivne lokacije i kulturne znamenitosti također i probati dobru hranu. 
-Opcije koje nudi naša aplikacija ujedinjuju sve informacije na jednom mjestu, čineći proces odabira restorana brzim i jednostavnim.
-Naša aplikacija će omogućiti korisnicima da filtriraju restorane prema različitim kriterijima kao što su vrsta kuhinje, cijena, lokacija i ocjene drugih korisnika.
+Bez obzira radi li se o turistu ili stanovniku grada, svima je zajedničko da, osim razgledavanja kulturnih znamenitosti i atraktivnih lokacija, žele i uživati u dobroj hrani.
+Naša aplikacija objedinjuje sve potrebne informacije na jednom mjestu, čime proces odabira restorana postaje brz i jednostavan.
+Korisnicima će biti omogućeno filtriranje restorana prema različitim kriterijima, poput vrste kuhinje, cjenovnog razreda, lokacije te ocjena drugih korisnika, kako bi lakše pronašli željeni restoran.
 
 # Tehnologije
 >Instalcija
