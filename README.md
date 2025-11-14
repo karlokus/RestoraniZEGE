@@ -2,6 +2,7 @@
 
 # Deploy
 [https://restoranizege-frontend.onrender.com/](https://restoranizege-frontend.onrender.com/)
+
 Napravljene funkcionalnosti registracije i prijave te funkcionalnost dodavanja restorana u omiljene(favorite) restorane
 
 # Opis projekta
