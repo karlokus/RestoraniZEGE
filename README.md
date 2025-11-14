@@ -94,9 +94,9 @@ cd frontend
 npm install
 ```
 
-#### 🔧 6. Konfiguracija environment varijabli (opcionalno)
+#### 🔧 6. Konfiguracija environment varijabli
 
-Napravi `.env.development` datoteku sa sljedećim sadržajem:
+Napravite `.env.development` datoteku sa sljedećim sadržajem:
 ```env
 VITE_GOOGLE_CLIENT_ID=your_google_client_id
 VITE_API_URL=http://localhost:3000
