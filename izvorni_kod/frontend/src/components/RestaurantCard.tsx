@@ -14,7 +14,9 @@ export type Restaurant = {
 
 function RestaurantCard({ restaurant }: { restaurant: Restaurant }) {
    const { isAuthenticated } = useAuthContext();
-   const { toggleFavorite } = useFavoritesContext();
+   const { toggleFavorite, isFavorite } = useFavoritesContext();
+
+   const isFav = isFavorite(restaurant.id);
 
    function onFavouriteClick() {
       toggleFavorite(restaurant.id);
@@ -22,10 +24,16 @@ function RestaurantCard({ restaurant }: { restaurant: Restaurant }) {
 
    return <div className="restaurant-card">
       <div className="restaurant-poster">
-         <img src={restaurant.imageUrl} alt={restaurant.name} />
+         <img
+            src={restaurant.imageUrl || 'https://via.placeholder.com/300x220?text=Restaurant'}
+            alt={restaurant.name}
+         />
          {isAuthenticated ? (
             <div className="restaurant-overlay">
-               <button className="favourite-btn" onClick={onFavouriteClick}>
+               <button
+                  className={`favourite-btn ${isFav ? 'favorited' : ''}`}
+                  onClick={onFavouriteClick}
+               >
                   ♥
                </button>
             </div>

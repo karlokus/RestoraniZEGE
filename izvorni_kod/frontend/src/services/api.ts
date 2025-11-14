@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? 'https://restoranizege.onrender.com' : 'http://localhost:3000');
+import { API_BASE_URL } from '../config/api.config';
 
 export interface RegisterData {
    firstName: string;
@@ -81,7 +81,6 @@ const makeAuthenticatedRequest = async (
 ): Promise<Response> => {
    let { accessToken, refreshToken } = getStoredTokens();
 
-   // Check if access token is expired and refresh if needed
    if (accessToken && isTokenExpired(accessToken) && refreshToken) {
       try {
          const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh-tokens`, {

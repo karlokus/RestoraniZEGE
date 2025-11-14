@@ -63,7 +63,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                      : userData.email || '',
                });
             } catch (error) {
-               // If fetching fails, use token data as fallback
                console.warn('Failed to fetch user data, using token data:', error);
                setUser({
                   id: decoded.sub,
