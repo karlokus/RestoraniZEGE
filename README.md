@@ -1,5 +1,8 @@
 # RestoraniZEGE
 
+# Deploy
+[https://restoranizege-frontend.onrender.com/](https://restoranizege-frontend.onrender.com/)
+
 # Opis projekta
 Cilj našeg projekta je izrada web aplikacije koja će pomoći svima u Zagrebu u pronalasku restorana i hrane po njihovom ukusu.
 Bez obzira radi li se o turistu ili stanovniku grada, svima je zajedničko da, osim razgledavanja kulturnih znamenitosti i atraktivnih lokacija, žele i uživati u dobroj hrani.
@@ -7,7 +10,104 @@ Naša aplikacija objedinjuje sve potrebne informacije na jednom mjestu, čime pr
 Korisnicima će biti omogućeno filtriranje restorana prema različitim kriterijima, poput vrste kuhinje, cjenovnog razreda, lokacije te ocjena drugih korisnika, kako bi lakše pronašli željeni restoran.
 
 # Tehnologije
->Instalcija
+
+Projekt koristi sljedeće tehnologije:
+
+## Backend – NestJS
+- Node.js + TypeScript
+- NestJS framework
+- PostgreSQL baza podataka
+- TypeORM za ORM sloj
+- JWT autentifikacija
+- REST API arhitektura
+
+## Frontend – React + Vite
+- React 18
+- Vite build alat
+- TypeScript
+- Axios za API pozive
+- React Router za navigaciju
+
+## 📥 Instalacija i pokretanje projekta
+
+Slijede upute kako klonirati repozitorij i pokrenuti backend i frontend dio aplikacije.
+
+### 🔽 1. Kloniranje repozitorija
+```bash
+git clone https://github.com/karlokus/RestoraniZEGE.git
+cd RestoraniZEGE
+```
+
+### 🛠️ Backend — NestJS
+
+#### 📦 2. Instalacija ovisnosti
+```bash
+cd backend
+npm install
+```
+
+#### ⚙️ 3. Kreiranje `.env` datoteke
+
+U root `/backend` direktorija napravite datoteku `.env` i/ili `.env.development` (ovisno o načinu pokretanja: produkcijski/development) sa sljedećim sadržajem:
+```env
+DATABASE_PORT=your_database_configuration
+DATABASE_USER=your_database_configuration
+DATABASE_PASSWORD=your_database_configuration
+DATABASE_HOST=your_database_configuration
+DATABASE_NAME=your_database_configuration
+DATABASE_SYNC=true
+DATABASE_AUTOLOAD=true
+
+PROFILE_API_KEY=whatever
+
+JWT_SECRET=your_jwt_secret
+JWT_TOKEN_AUDIENCE=localhost:3000
+JWT_TOKEN_ISSUER=localhost:3000
+JWT_ACCESS_TOKEN_TTL=3600
+
+JWT_REFRESH_TOKEN_TTL=86400
+
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=GOCSPX-your_google_client_secret
+```
+
+#### ▶️ 4. Pokretanje backend servera
+
+**Development način:**
+```bash
+npm run start:dev
+```
+
+**Production build:**
+```bash
+npm run build
+npm run start:prod
+```
+
+Backend će biti dostupan na: **http://localhost:3000**
+
+### 💻 Frontend — React + Vite
+
+#### 📦 5. Instalacija ovisnosti
+```bash
+cd frontend
+npm install
+```
+
+#### 🔧 6. Konfiguracija environment varijabli (opcionalno)
+
+Napravi `.env.development` datoteku sa sljedećim sadržajem:
+```env
+VITE_GOOGLE_CLIENT_ID=your_google_client_id
+VITE_API_URL=http://localhost:3000
+```
+
+#### ▶️ 7. Pokretanje frontend aplikacije
+```bash
+npm run dev
+```
+
+Aplikacija će biti dostupna na: **http://localhost:5173**
 
 # Članovi tima 
 - Ivan Gabrilo - ivan.gabrilo@fer.unizg.hr
