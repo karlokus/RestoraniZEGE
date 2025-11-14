@@ -2,6 +2,7 @@
 
 # Deploy
 [https://restoranizege-frontend.onrender.com/](https://restoranizege-frontend.onrender.com/)
+Napravljene funkcionalnosti registracije i prijave te funkcionalnost dodavanja restorana u omiljene(favorite) restorane
 
 # Opis projekta
 Cilj našeg projekta je izrada web aplikacije koja će pomoći svima u Zagrebu u pronalasku restorana i hrane po njihovom ukusu.
