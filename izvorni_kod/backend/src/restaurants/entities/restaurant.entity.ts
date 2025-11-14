@@ -1,17 +1,13 @@
 import { User } from "src/users/entities/user.entity";
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { CousineType } from "../enums/cousine-type.enum";
+import { Favorite } from "src/favorites/entities/favorite.entity";
 
 
 @Entity()
 export class Restaurant {                           //  todo -> provjeriti tablice i atribute sve
     @PrimaryGeneratedColumn()
     id: number;
-
-    @ManyToOne(() => User, (user) => user.restaurant, {
-        onDelete: 'CASCADE',
-    })
-    user: User;
 
     @Column({
         type: 'varchar',
@@ -107,4 +103,14 @@ export class Restaurant {                           //  todo -> provjeriti tabli
     verified: boolean;
 
     // todo -> created at i jos ostale, tako i za user
+
+    @ManyToOne(() => User, (user) => user.restaurant, {
+        onDelete: 'CASCADE',
+    })
+    user: User;
+
+    @OneToMany(() => Favorite, (favorite) => favorite.restaurant, {
+        //eager: true,
+    })
+    favorite: Favorite[];
 }
