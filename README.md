@@ -112,13 +112,13 @@ npm run dev
 Aplikacija će biti dostupna na: **http://localhost:5173**
 
 # Članovi tima 
-- Ivan Gabrilo - ivan.gabrilo@fer.unizg.hr
-- Karlo Kus - karlo.kus@fer.unizg.hr
-- Nina Majetić - nina.majetic@fer.unizg.hr
-- Petar Marčinko - petar.marcinko@fer.unizg.hr
-- Noa Zvonimir Paić - noa.paic@fer.unizg.hr
-- Matej Samaržija - matej.samarzija@fer.unizg.hr
-- Matej Šest - matej.sest@fer.unizg.hr
+- Ivan Gabrilo - Ivan.Gabrilo@fer.unizg.hr
+- Karlo Kus - Karlo.Kus@fer.unizg.hr
+- Nina Majetić - Nina.Majetic@fer.unizg.hr
+- Petar Marčinko - Petar.Marcinko@fer.unizg.hr
+- Noa Zvonimir Paić - Noa.Paic@fer.unizg.hr
+- Matej Samaržija - Matej.Samarzija@fer.unizg.hr
+- Matej Šest - Matej.Sest@fer.unizg.hr
 
 # 📝 Kodeks ponašanja [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
 Kao studenti sigurno ste upoznati s minimumom prihvatljivog ponašanja definiran u [KODEKS PONAŠANJA STUDENATA FAKULTETA ELEKTROTEHNIKE I RAČUNARSTVA SVEUČILIŠTA U ZAGREBU](https://www.fer.hr/_download/repository/Kodeks_ponasanja_studenata_FER-a_procisceni_tekst_2016%5B1%5D.pdf), te dodatnim naputcima za timski rad na predmetu [Programsko inženjerstvo](https://wwww.fer.hr).
