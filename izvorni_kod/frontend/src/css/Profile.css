@@ -105,3 +105,56 @@
   color: #b1492b;
 }
 .option-row.danger:hover { background: #ffefe6; }
+.profile-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+@media (max-width: 640px) {
+  .profile-page {
+    padding: 14px;
+  }
+
+  .profile-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .profile-head-left {
+    width: 100%;
+  }
+
+  .btn.edit-btn {
+    width: 100%;
+  }
+
+  .field-row {
+    grid-template-columns: 22px 1fr;
+  }
+
+  .option-row {
+    width: calc(100% - 28px);
+    margin: 6px 14px;
+  }
+
+  .options-title {
+    margin: 0 14px 6px;
+  }
+}
+
+@media (max-width: 420px) {
+  .card {
+    border-radius: 14px;
+    padding: 14px;
+  }
+
+  .avatar {
+    width: 42px;
+    height: 42px;
+  }
+
+  .profile-name {
+    font-size: 18px;
+  }
+}
