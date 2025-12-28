@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { useAuthContext } from "../contexts/AuthContext";
 import { useFavoritesContext } from "../contexts/FavoritesContext";
 import { useEventsContext } from "../contexts/EventsContext";
 import { useNotificationsContext } from "../contexts/NotificationsContext";
+import { useRestaurantsContext } from "../contexts/RestaurantsContext";
 import RestaurantCard, { type Restaurant } from "../components/RestaurantCard"
-import { api } from "../services/api";
 import "../css/Home.css"
 import chefImg from "../assets/chef.png";
 
@@ -13,10 +13,8 @@ function Home() {
    const { isFavorite } = useFavoritesContext();
    const { getUpcomingEvents } = useEventsContext();
    const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotificationsContext();
-   const [searchQuery, setSearchQuery] = useState("");
-   const [error, setError] = useState<string | null>(null);
-   const [loading, setLoading] = useState(true);
-   const [restaurants, setRestaurants] = useState<Array<Restaurant>>([]);
+   const { restaurants, loading, error, filters, setSearchQuery } = useRestaurantsContext();
+
    const [activeFilter, setActiveFilter] = useState<'all' | 'favorites' | 'events'>('all');
    const [showDropdown, setShowDropdown] = useState(false);
    const [showNotifications, setShowNotifications] = useState(false);
@@ -33,53 +31,9 @@ function Home() {
       return (ime + prez).toUpperCase();
    })();
 
-   // Load restaurants from backend
-   useEffect(() => {
-      const loadRestaurants = async () => {
-         try {
-            setLoading(true);
-            const data = await api.getRestaurants();
-            // Map backend restaurant data to frontend Restaurant type
-            const mappedRestaurants: Restaurant[] = data.map((r: any) => ({
-               id: r.id,
-               name: r.name || '',
-               cuisine: r.role || r.cuisineType || r.cuisine || '',
-               location: r.adress || r.city || r.location || '',
-               rating: r.rating || 0,
-               priceLevel: r.priceLevel || 0,
-               imageUrl: r.imageUrl || '',
-            }));
-            setRestaurants(mappedRestaurants);
-            setError(null);
-         } catch (err: any) {
-            console.error('Failed to load restaurants:', err);
-            setError("Neuspješno učitavanje restorana. Pokušajte ponovno.");
-            setRestaurants([]);
-         } finally {
-            setLoading(false);
-         }
-      };
-
-      loadRestaurants();
-   }, []);
-
    const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-      if (!searchQuery.trim()) return;
-      if (loading) return;
-      /*
-            setLoading(true);
-            try {
-               const searchResults = await searchRestaurants(searchQuery);
-               setRestaurants(searchResults);
-               setError(null);
-            } catch (error) {
-               setError("Error searching restaurants. Please try again.");
-            } finally {
-               setLoading(false);
-            }
-         }
-      */
+      // Pretraga se automatski vrši preko konteksta
    }
 
    const handleLogout = async () => {
@@ -243,7 +197,7 @@ function Home() {
                   <input type="text"
                      placeholder="Pretrazite restorane"
                      className="search-input"
-                     value={searchQuery}
+                     value={filters.searchQuery}
                      onChange={(e) => setSearchQuery(e.target.value)}
                   />
                   <button type="submit" className="search-button">Search</button>
@@ -298,7 +252,7 @@ function Home() {
                         <div className="restaurant-grid">
                            {restaurants
                               .filter((restaurant: Restaurant) => {
-                                 const matchesSearch = restaurant.name.toLowerCase().includes(searchQuery.toLowerCase());
+                                 const matchesSearch = restaurant.name.toLowerCase().includes(filters.searchQuery.toLowerCase());
                                  if (activeFilter === 'favorites') {
                                     return matchesSearch && isFavorite(restaurant.id);
                                  }
@@ -319,7 +273,7 @@ function Home() {
                         <div className="restaurant-grid">
                            {restaurants
                               .filter((restaurant: Restaurant) =>
-                                 restaurant.name.toLowerCase().includes(searchQuery.toLowerCase())
+                                 restaurant.name.toLowerCase().includes(filters.searchQuery.toLowerCase())
                               )
                               .map((restaurant: Restaurant) => (
                                  <RestaurantCard key={restaurant.id} restaurant={restaurant} />
