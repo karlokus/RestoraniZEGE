@@ -3,6 +3,7 @@ import { useAuthContext } from "../contexts/AuthContext";
 import { useFavoritesContext } from "../contexts/FavoritesContext";
 import { useRestaurantsContext, type SortOption } from "../contexts/RestaurantsContext";
 import type { Restaurant } from "../components/RestaurantCard";
+import RestaurantDetail from "../components/RestaurantDetail";
 import "../css/Filter.css";
 
 // Koordinate centra Zagreba
@@ -37,6 +38,9 @@ function Filter() {
 
    // State za hover na karti
    const [hoveredRestaurant, setHoveredRestaurant] = useState<number | null>(null);
+
+   // State za prikaz detalja restorana
+   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
 
    // Dropdown states
    const [showUserDropdown, setShowUserDropdown] = useState(false);
@@ -221,6 +225,7 @@ function Filter() {
                                  style={{ top: `${pos.top}%`, left: `${pos.left}%` }}
                                  onMouseEnter={() => setHoveredRestaurant(restaurant.id)}
                                  onMouseLeave={() => setHoveredRestaurant(null)}
+                                 onClick={() => setSelectedRestaurant(restaurant)}
                                  title={restaurant.name}
                               >
                                  <span className="marker-icon">{getCuisineIcon(restaurant.cuisine)}</span>
@@ -284,6 +289,7 @@ function Filter() {
                               className={`restaurant-card-item ${hoveredRestaurant === restaurant.id ? 'highlighted' : ''}`}
                               onMouseEnter={() => setHoveredRestaurant(restaurant.id)}
                               onMouseLeave={() => setHoveredRestaurant(null)}
+                              onClick={() => setSelectedRestaurant(restaurant)}
                            >
                               <div className="card-icon-wrapper">
                                  <span className="card-cuisine-icon">{getCuisineIcon(restaurant.cuisine)}</span>
@@ -325,9 +331,16 @@ function Filter() {
                }
             </div >
          </div >
+
+         {selectedRestaurant && (
+            <RestaurantDetail
+               restaurant={selectedRestaurant}
+               isOpen={!!selectedRestaurant}
+               onClose={() => setSelectedRestaurant(null)}
+            />
+         )}
       </div >
    );
 }
 
 export default Filter;
-
