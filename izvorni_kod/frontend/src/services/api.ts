@@ -226,6 +226,23 @@ export const api = {
       return response.json();
    },
 
+   // Get single restaurant by ID
+   async getRestaurantById(id: number): Promise<any> {
+      const response = await fetch(`${API_BASE_URL}/restaurants/${id}`, {
+         method: 'GET',
+         headers: {
+            'Content-Type': 'application/json',
+         },
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to fetch restaurant' }));
+         throw new Error(error.message || 'Failed to fetch restaurant');
+      }
+
+      return response.json();
+   },
+
 
    async authenticatedRequest(url: string, options: RequestInit = {}): Promise<Response> {
       return makeAuthenticatedRequest(`${API_BASE_URL}${url}`, options);
