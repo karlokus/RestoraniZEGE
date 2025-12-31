@@ -15,6 +15,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { AccessTokenGuard } from './auth/guards/access-token/access-token.guard';
 import { AuthenticationGuard } from './auth/guards/authentication/authentication.guard';
 import { AuthModule } from './auth/auth.module';
+import { FavoritesModule } from './favorites/favorites.module';
 
 const ENV = process.env.NODE_ENV;
 
@@ -22,6 +23,7 @@ const ENV = process.env.NODE_ENV;
   imports: [
     UsersModule,
     RestaurantsModule,
+    FavoritesModule,
     AuthModule,
     ConfigModule.forRoot({
       isGlobal: true,
@@ -41,6 +43,9 @@ const ENV = process.env.NODE_ENV;
         database: configService.get('database.name'),
         autoLoadEntities: configService.get('database.autoLoadEntities'),
         synchronize: configService.get('database.synchronize'),
+        ssl: configService.get('database.sslEnabled') ? {
+          rejectUnauthorized: false,
+        } : false,
       }),
     }),
     ConfigModule.forFeature(jwtConfig),

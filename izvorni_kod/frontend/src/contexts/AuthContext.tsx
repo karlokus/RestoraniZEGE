@@ -1,83 +1,208 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { api, getStoredTokens, storeTokens, clearTokens, type RegisterData, type SignInData, type GoogleAuthData } from '../services/api';
 
 type User = {
    id: number;
-   name: string;
+   firstName: string;
+   lastName: string;
    email: string;
-   username?: string;
+   role: string;
+   name?: string;
 }
 
 type AuthContextType = {
    user: User | null;
    isAuthenticated: boolean;
    loading: boolean;
-   checkAuth: () => Promise<void>;
+   login: (data: SignInData) => Promise<void>;
+   register: (data: RegisterData) => Promise<void>;
+   googleAuth: (data: GoogleAuthData) => Promise<void>;
    logout: () => Promise<void>;
+   refreshAccessToken: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// TEMPORARY: Set to true to mock logged in user
-const MOCK_AUTH = true;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
    const [user, setUser] = useState<User | null>(null);
    const [loading, setLoading] = useState(true);
 
-   const checkAuth = async () => {
-      // TEMPORARY: Mock authentication for development
-      if (MOCK_AUTH) {
-         setTimeout(() => {
-            setUser({
-               id: 1,
-               name: 'Marko Kovač',
-               email: 'marko@example.com',
-               username: 'marko'
-            });
-            setLoading(false);
-         }, 500);
-         return;
-      }
-
+   const decodeToken = (token: string): any => {
       try {
-         const response = await fetch('http://localhost:3000/api/auth/me', {
-            credentials: 'include',
-         });
-
-         if (response.ok) {
-            const userData = await response.json();
-            setUser(userData);
-         } else {
-            setUser(null);
-         }
+         const base64Url = token.split('.')[1];
+         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+         const jsonPayload = decodeURIComponent(
+            atob(base64)
+               .split('')
+               .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+               .join('')
+         );
+         return JSON.parse(jsonPayload);
       } catch (error) {
-         console.error('Auth check failed:', error);
-         setUser(null);
-      } finally {
-         setLoading(false);
+         console.error('Failed to decode token:', error);
+         return null;
       }
    };
 
-   const logout = async () => {
-      // TEMPORARY: Mock logout
-      if (MOCK_AUTH) {
-         setUser(null);
-         return;
+   const loadUserFromToken = async () => {
+      const { accessToken } = getStoredTokens();
+      if (accessToken) {
+         const decoded = decodeToken(accessToken);
+         if (decoded && decoded.sub) {
+            // Try to fetch full user data from backend
+            try {
+               const userData = await api.getUserById(decoded.sub);
+               setUser({
+                  id: userData.id,
+                  firstName: userData.firstName || '',
+                  lastName: userData.lastName || '',
+                  email: userData.email,
+                  role: userData.role,
+                  name: userData.firstName && userData.lastName
+                     ? `${userData.firstName} ${userData.lastName}`
+                     : userData.email || '',
+               });
+            } catch (error) {
+               console.warn('Failed to fetch user data, using token data:', error);
+               setUser({
+                  id: decoded.sub,
+                  firstName: decoded.firstName || '',
+                  lastName: decoded.lastName || '',
+                  email: decoded.email || '',
+                  role: decoded.role || 'user',
+                  name: decoded.firstName && decoded.lastName
+                     ? `${decoded.firstName} ${decoded.lastName}`
+                     : decoded.email || '',
+               });
+            }
+         }
+      }
+   };
+
+
+   const refreshAccessToken = async (): Promise<boolean> => {
+      const { refreshToken } = getStoredTokens();
+      if (!refreshToken) {
+         return false;
       }
 
       try {
-         await fetch('http://localhost:3000/api/auth/logout', {
-            method: 'POST',
-            credentials: 'include',
-         });
-         setUser(null);
+         const response = await api.refreshTokens({ refreshToken });
+         storeTokens(response.accessToken, response.refreshToken);
+         await loadUserFromToken();
+         return true;
       } catch (error) {
-         console.error('Logout failed:', error);
+         console.error('Token refresh failed:', error);
+         clearTokens();
+         setUser(null);
+         return false;
       }
+   };
+
+
+   const login = async (data: SignInData): Promise<void> => {
+      try {
+         const response = await api.signIn(data);
+         storeTokens(response.accessToken, response.refreshToken);
+
+         const decoded = decodeToken(response.accessToken);
+         if (decoded && decoded.sub) {
+            // Fetch full user data from backend
+            try {
+               const userData = await api.getUserById(decoded.sub);
+               setUser({
+                  id: userData.id,
+                  firstName: userData.firstName || '',
+                  lastName: userData.lastName || '',
+                  email: userData.email,
+                  role: userData.role,
+                  name: userData.firstName && userData.lastName
+                     ? `${userData.firstName} ${userData.lastName}`
+                     : userData.email || '',
+               });
+            } catch (userError) {
+               // If fetching user fails, fall back to token data
+               console.warn('Failed to fetch user data, using token data:', userError);
+               await loadUserFromToken();
+            }
+         } else {
+            await loadUserFromToken();
+         }
+      } catch (error: any) {
+         throw new Error(error.message || 'Login failed');
+      }
+   };
+
+   const register = async (data: RegisterData): Promise<void> => {
+      try {
+         const userData = await api.register(data);
+
+         const authResponse = await api.signIn({
+            email: data.email,
+            password: data.password,
+         });
+
+         storeTokens(authResponse.accessToken, authResponse.refreshToken);
+
+         setUser({
+            id: userData.id,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            email: userData.email,
+            role: userData.role,
+            name: `${userData.firstName} ${userData.lastName}`,
+         });
+      } catch (error: any) {
+         throw new Error(error.message || 'Registration failed');
+      }
+   };
+
+   const googleAuth = async (data: GoogleAuthData): Promise<void> => {
+      try {
+         const response = await api.googleAuth(data);
+         storeTokens(response.accessToken, response.refreshToken);
+
+         // Decode token to get user ID
+         const decoded = decodeToken(response.accessToken);
+         if (decoded && decoded.sub) {
+            // Fetch full user data from backend
+            try {
+               const userData = await api.getUserById(decoded.sub);
+               setUser({
+                  id: userData.id,
+                  firstName: userData.firstName || '',
+                  lastName: userData.lastName || '',
+                  email: userData.email,
+                  role: userData.role,
+                  name: userData.firstName && userData.lastName
+                     ? `${userData.firstName} ${userData.lastName}`
+                     : userData.email || '',
+               });
+            } catch (userError) {
+               // If fetching user fails, fall back to token data
+               console.warn('Failed to fetch user data, using token data:', userError);
+               await loadUserFromToken();
+            }
+         } else {
+            await loadUserFromToken();
+         }
+      } catch (error: any) {
+         throw new Error(error.message || 'Google authentication failed');
+      }
+   };
+
+
+   const logout = async (): Promise<void> => {
+      clearTokens();
+      setUser(null);
    };
 
    useEffect(() => {
-      checkAuth();
+      const initAuth = async () => {
+         await loadUserFromToken();
+         setLoading(false);
+      };
+      initAuth();
    }, []);
 
    return (
@@ -85,8 +210,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
          user,
          isAuthenticated: !!user,
          loading,
-         checkAuth,
-         logout
+         login,
+         register,
+         googleAuth,
+         logout,
+         refreshAccessToken,
       }}>
          {children}
       </AuthContext.Provider>

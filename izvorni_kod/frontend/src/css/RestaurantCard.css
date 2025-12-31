@@ -55,6 +55,12 @@
    opacity: 1;
 }
 
+/* Show overlay when favorite is active */
+.restaurant-overlay:has(.favourite-btn.favorited) {
+   opacity: 1;
+   background: rgba(0, 0, 0, 0);
+}
+
 .favourite-btn {
    background-color: white;
    border: none;
@@ -68,12 +74,23 @@
    cursor: pointer;
    transition: all 0.3s ease;
    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+   color: #ccc;
 }
 
 .favourite-btn:hover {
    background-color: #ff4444;
    color: white;
    transform: scale(1.1);
+}
+
+.favourite-btn.favorited {
+   color: #ff4444;
+   background-color: white;
+}
+
+.favourite-btn.favorited:hover {
+   background-color: #ff4444;
+   color: white;
 }
 
 /* Restaurant info section */

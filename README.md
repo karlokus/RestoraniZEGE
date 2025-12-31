@@ -1,22 +1,124 @@
 # RestoraniZEGE
 
+# Deploy
+[https://restoranizege-frontend.onrender.com/](https://restoranizege-frontend.onrender.com/)
+
+Napravljene funkcionalnosti registracije i prijave te funkcionalnost dodavanja restorana u omiljene(favorite) restorane
+
 # Opis projekta
 Cilj našeg projekta je izrada web aplikacije koja će pomoći svima u Zagrebu u pronalasku restorana i hrane po njihovom ukusu.
-Bilo turist ili stanovnik grada Zagreba, svima je u interesu osim da posjete atraktivne lokacije i kulturne znamenitosti također i probati dobru hranu. 
-Opcije koje nudi naša aplikacija ujedinjuju sve informacije na jednom mjestu, čineći proces odabira restorana brzim i jednostavnim.
-Naša aplikacija će omogućiti korisnicima da filtriraju restorane prema različitim kriterijima kao što su vrsta kuhinje, cijena, lokacija i ocjene drugih korisnika.
+Bez obzira radi li se o turistu ili stanovniku grada, svima je zajedničko da, osim razgledavanja kulturnih znamenitosti i atraktivnih lokacija, žele i uživati u dobroj hrani.
+Naša aplikacija objedinjuje sve potrebne informacije na jednom mjestu, čime proces odabira restorana postaje brz i jednostavan.
+Korisnicima će biti omogućeno filtriranje restorana prema različitim kriterijima, poput vrste kuhinje, cjenovnog razreda, lokacije te ocjena drugih korisnika, kako bi lakše pronašli željeni restoran.
 
 # Tehnologije
->Instalcija
+
+Projekt koristi sljedeće tehnologije:
+
+## Backend – NestJS
+- Node.js + TypeScript
+- NestJS framework
+- PostgreSQL baza podataka
+- TypeORM za ORM sloj
+- JWT autentifikacija
+- REST API arhitektura
+
+## Frontend – React + Vite
+- React 18
+- Vite build alat
+- TypeScript
+- Axios za API pozive
+- React Router za navigaciju
+
+## 📥 Instalacija i pokretanje projekta
+
+Slijede upute kako klonirati repozitorij i pokrenuti backend i frontend dio aplikacije.
+
+### 🔽 1. Kloniranje repozitorija
+```bash
+git clone https://github.com/karlokus/RestoraniZEGE.git
+cd RestoraniZEGE
+```
+
+### 🛠️ Backend — NestJS
+
+#### 📦 2. Instalacija ovisnosti
+```bash
+cd backend
+npm install
+```
+
+#### ⚙️ 3. Kreiranje `.env` datoteke
+
+U root `/backend` direktorija napravite datoteku `.env` i/ili `.env.development` (ovisno o načinu pokretanja: produkcijski/development) sa sljedećim sadržajem:
+```env
+DATABASE_PORT=your_database_configuration
+DATABASE_USER=your_database_configuration
+DATABASE_PASSWORD=your_database_configuration
+DATABASE_HOST=your_database_configuration
+DATABASE_NAME=your_database_configuration
+DATABASE_SYNC=true
+DATABASE_AUTOLOAD=true
+
+PROFILE_API_KEY=whatever
+
+JWT_SECRET=your_jwt_secret
+JWT_TOKEN_AUDIENCE=localhost:3000
+JWT_TOKEN_ISSUER=localhost:3000
+JWT_ACCESS_TOKEN_TTL=3600
+
+JWT_REFRESH_TOKEN_TTL=86400
+
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=GOCSPX-your_google_client_secret
+```
+
+#### ▶️ 4. Pokretanje backend servera
+
+**Development način:**
+```bash
+npm run start:dev
+```
+
+**Production build:**
+```bash
+npm run build
+npm run start:prod
+```
+
+Backend će biti dostupan na: **http://localhost:3000**
+
+### 💻 Frontend — React + Vite
+
+#### 📦 5. Instalacija ovisnosti
+```bash
+cd frontend
+npm install
+```
+
+#### 🔧 6. Konfiguracija environment varijabli
+
+Napravite `.env.development` datoteku sa sljedećim sadržajem:
+```env
+VITE_GOOGLE_CLIENT_ID=your_google_client_id
+VITE_API_URL=http://localhost:3000
+```
+
+#### ▶️ 7. Pokretanje frontend aplikacije
+```bash
+npm run dev
+```
+
+Aplikacija će biti dostupna na: **http://localhost:5173**
 
 # Članovi tima 
-- Ivan Gabrilo - ivan.gabrilo@fer.unizg.hr
-- Karlo Kus - karlo.kus@fer.unizg.hr
-- Nina Majetić - nina.majetic@fer.unizg.hr
-- Petar Marčinko - petar.marcinko@fer.unizg.hr
-- Noa Zvonimir Paić - noa.paic@fer.unizg.hr
-- Matej Samaržija - matej.samarzija@fer.unizg.hr
-- Matej Šest - matej.sest@fer.unizg.hr
+- Ivan Gabrilo - Ivan.Gabrilo@fer.unizg.hr
+- Karlo Kus - Karlo.Kus@fer.unizg.hr
+- Nina Majetić - Nina.Majetic@fer.unizg.hr
+- Petar Marčinko - Petar.Marcinko@fer.unizg.hr
+- Noa Zvonimir Paić - Noa.Paic@fer.unizg.hr
+- Matej Samaržija - Matej.Samarzija@fer.unizg.hr
+- Matej Šest - Matej.Sest@fer.unizg.hr
 
 # 📝 Kodeks ponašanja [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
 Kao studenti sigurno ste upoznati s minimumom prihvatljivog ponašanja definiran u [KODEKS PONAŠANJA STUDENATA FAKULTETA ELEKTROTEHNIKE I RAČUNARSTVA SVEUČILIŠTA U ZAGREBU](https://www.fer.hr/_download/repository/Kodeks_ponasanja_studenata_FER-a_procisceni_tekst_2016%5B1%5D.pdf), te dodatnim naputcima za timski rad na predmetu [Programsko inženjerstvo](https://wwww.fer.hr).
@@ -25,7 +127,7 @@ Očekujemo da ćete poštovati [etički kodeks IEEE-a](https://www.ieee.org/abou
 Kodeks ponašanja skup je provedivih pravila koja služe za jasnu komunikaciju očekivanja i zahtjeva za rad zajednice/tima. Njime se jasno definiraju obaveze, prava, neprihvatljiva ponašanja te  odgovarajuće posljedice (za razliku od etičkog kodeksa). U ovom repozitoriju dan je jedan od široko prihvačenih kodeks ponašanja za rad u zajednici otvorenog koda.
 
 # 📝 Licenca
-Važeča (1)
+Važeća (1)
 [![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa]
 
 Ovaj repozitorij sadrži otvoreni obrazovni sadržaji (eng. Open Educational Resources)  i licenciran je prema pravilima Creative Commons licencije koja omogućava da preuzmete djelo, podijelite ga s drugima uz 

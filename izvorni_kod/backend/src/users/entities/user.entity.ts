@@ -2,6 +2,7 @@ import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { UserRole } from '../enums/userRole.enum';
 import { Restaurant } from 'src/restaurants/entities/restaurant.entity';
+import { Favorite } from '../../favorites/entities/favorite.entity';
 
 @Entity()
 export class User {
@@ -61,4 +62,9 @@ export class User {
         eager: true,
     })
     restaurant: Restaurant[];
+
+    @OneToMany(() => Favorite, (favorite) => favorite.user, {
+        eager: true,
+    })
+    favorite: Favorite[];
 }

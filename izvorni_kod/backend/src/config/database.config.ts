@@ -8,4 +8,7 @@ export default registerAs('database', () => ({
     name: process.env.DATABASE_NAME,
     synchronize: process.env.DATABASE_SYNC === 'true' ? true : false,
     autoLoadEntities: process.env.DATABASE_AUTOLOAD === 'true' ? true : false,
+    sslEnabled: process.env.DATABASE_SSL !== undefined
+        ? process.env.DATABASE_SSL === 'true'
+        : process.env.NODE_ENV !== 'development',
 }));
