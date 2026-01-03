@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, ForbiddenException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import jwtConfig from 'src/auth/config/jwt.config';
@@ -31,10 +31,20 @@ export class AccessTokenGuard implements CanActivate {
             const payload = await this.jwtService.verifyAsync(
                 token,
                 this.jwtConfiguration
-            );                                        // todo -> decorator ali za parametre(ne fje ili klase) da nemoramo ˇ ovak payload dohvaćat u funkciji  
+            );                                        // todo -> decorator ali za parametre(ne fje ili klase) da nemoramo ˇ ovak payload dohvaćat u funkciji
+
+            // Provjera je li korisnik blokiran
+            if (payload.isBlocked === true) {
+                throw new ForbiddenException('Your account has been blocked. Please contact support.');
+            }
+
             request[REQUEST_USER_KEY] = payload;      // onda mogu u controlleru doć do payloada req.user ili req[REQUEST_USER_KEY]
             // todo request.user = payload
-        } catch {
+        } catch (error) {
+            // Ako je ForbiddenException, proširuj ga dalje
+            if (error instanceof ForbiddenException) {
+                throw error;
+            }
             throw new UnauthorizedException();
         }
 

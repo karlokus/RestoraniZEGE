@@ -15,7 +15,15 @@ import { APP_GUARD } from '@nestjs/core';
 import { AccessTokenGuard } from './auth/guards/access-token/access-token.guard';
 import { AuthenticationGuard } from './auth/guards/authentication/authentication.guard';
 import { AuthModule } from './auth/auth.module';
+import { RolesGuard } from './auth/guards/roles/roles.guard';
 import { FavoritesModule } from './favorites/favorites.module';
+import { EventsModule } from './events/events.module';
+import { CommentsModule } from './comments/comments.module';
+import { NotificationsModule } from './notification/notifications.model';
+import { RatingsModule } from './ratings/ratings.module';
+import { RestaurantPhotosModule } from './restaurant-photos/restaurant-photos.module';
+import { VerificationRequestsModule } from './verification/verification.module';
+import { AdminModule } from './admin/admin.module';
 
 const ENV = process.env.NODE_ENV;
 
@@ -24,6 +32,12 @@ const ENV = process.env.NODE_ENV;
     UsersModule,
     RestaurantsModule,
     FavoritesModule,
+    EventsModule,
+    CommentsModule,
+    NotificationsModule,
+    RatingsModule,
+    RestaurantPhotosModule,
+    VerificationRequestsModule,
     AuthModule,
     ConfigModule.forRoot({
       isGlobal: true,
@@ -50,6 +64,7 @@ const ENV = process.env.NODE_ENV;
     }),
     ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync(jwtConfig.asProvider()),
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [
@@ -57,6 +72,10 @@ const ENV = process.env.NODE_ENV;
     {
       provide: APP_GUARD,
       useClass: AuthenticationGuard
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard
     },
     AccessTokenGuard
   ],

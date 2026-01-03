@@ -1,11 +1,17 @@
 import { User } from "src/users/entities/user.entity";
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { CousineType } from "../enums/cousine-type.enum";
+import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Favorite } from "src/favorites/entities/favorite.entity";
+import { CuisineType } from "../enums/cuisine-type.enum";
+
+import { Event } from "../../events/entities/event.entity";
+import { Rating } from "../../ratings/entities/rating.entity";
+import { Comment } from "../../comments/entities/comment.entity";
+import { VerificationRequest } from "../../verification/entities/verification-request.entity";
+import { RestaurantPhoto } from "../../restaurant-photos/entities/restaurant-photo.entity";
 
 
 @Entity()
-export class Restaurant {                           //  todo -> provjeriti tablice i atribute sve
+export class Restaurant {
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -25,12 +31,12 @@ export class Restaurant {                           //  todo -> provjeriti tabli
     description: string;
 
     @Column({
-        type: 'varchar',
-        length: 96,
+        type: 'enum',
+        enum: CuisineType,
         nullable: true,
-        unique: false,
+        default: CuisineType.BISTRO,
     })
-    role: string;                            // todo -> cousinetype
+    cuisineType: CuisineType;
 
     @Column({
         type: 'varchar',
@@ -68,7 +74,7 @@ export class Restaurant {                           //  todo -> provjeriti tabli
         nullable: true,
         unique: true,
     })
-    phone: string;
+    phone?: string;
 
     @Column({
         type: 'varchar',
@@ -76,7 +82,7 @@ export class Restaurant {                           //  todo -> provjeriti tabli
         nullable: true,
         unique: true,
     })
-    email: string;
+    email?: string;
 
     @Column({
         type: 'varchar',
@@ -84,7 +90,7 @@ export class Restaurant {                           //  todo -> provjeriti tabli
         nullable: true,
         unique: true,
     })
-    website: string;
+    website?: string;
 
     @Column({
         type: 'varchar',
@@ -96,13 +102,33 @@ export class Restaurant {                           //  todo -> provjeriti tabli
 
     @Column({
         type: 'boolean',
-        //nullable: false,
         unique: false,
         default: false,
     })
     verified: boolean;
 
-    // todo -> created at i jos ostale, tako i za user
+    @CreateDateColumn({
+        type: 'timestamp',
+    })
+    createdAt: Date;
+
+    @UpdateDateColumn({
+        type: 'timestamp',
+    })
+    updatedAt: Date;
+
+    @Column({ 
+        type: 'decimal', 
+        precision: 3, 
+        scale: 2, 
+        default: 0 
+    })
+    averageRating: number;
+
+    @Column({ 
+        default: 0 
+    })
+    totalRatings: number;
 
     @ManyToOne(() => User, (user) => user.restaurant, {
         onDelete: 'CASCADE',
@@ -113,4 +139,19 @@ export class Restaurant {                           //  todo -> provjeriti tabli
         //eager: true,
     })
     favorite: Favorite[];
+
+    @OneToMany(() => Event, (event) => event.restaurant)
+    events: Event[];
+
+    @OneToMany(() => Rating, (rating) => rating.restaurant)
+    ratings: Rating[];
+
+    @OneToMany(() => Comment, (comment) => comment.restaurant)
+    comments: Comment[];
+
+    @OneToMany(() => VerificationRequest, (vr) => vr.restaurant)
+    verificationRequests: VerificationRequest[];
+
+    @OneToMany(() => RestaurantPhoto, (photo) => photo.restaurant)
+    photos: RestaurantPhoto[];
 }
