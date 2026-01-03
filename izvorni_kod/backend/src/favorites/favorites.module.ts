@@ -8,6 +8,6 @@ import { FavoritesService } from "./providers/favorites.service";
     controllers: [FavoritesController],
     providers: [FavoritesService],
     imports: [TypeOrmModule.forFeature([Favorite])],
-    exports: [],
+    exports: [FavoritesService],
 })
 export class FavoritesModule {}
