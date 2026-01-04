@@ -477,29 +477,6 @@ a.contact-value:hover {
    transform: scale(1.2);
 }
 
-/* Responsive carousel */
-@media (max-width: 768px) {
-   .gallery-carousel-item {
-      flex: 0 0 50%;
-   }
-
-   .carousel-btn {
-      width: 32px;
-      height: 32px;
-      font-size: 1.2rem;
-   }
-}
-
-@media (max-width: 480px) {
-   .gallery-carousel-item {
-      flex: 0 0 100%;
-   }
-
-   .carousel-btn {
-      display: none;
-   }
-}
-
 /* Events */
 .events-list {
    display: flex;
@@ -692,6 +669,18 @@ a.contact-value:hover {
       flex-direction: column;
       align-items: flex-start;
    }
+
+   /* Carousel za tablete - manje slike da stanu sve */
+   .gallery-carousel-item {
+      flex: 0 0 140px;
+      min-width: 140px;
+   }
+
+   .carousel-btn {
+      width: 32px;
+      height: 32px;
+      font-size: 1.2rem;
+   }
 }
 
 @media (max-width: 480px) {
@@ -702,6 +691,33 @@ a.contact-value:hover {
    .gallery-grid {
       grid-template-columns: repeat(2, 1fr);
       gap: 0.5rem;
+   }
+
+   /* Carousel za mobitele - još manje slike */
+   .gallery-carousel-item {
+      flex: 0 0 120px;
+      min-width: 120px;
+   }
+
+   .carousel-btn {
+      width: 28px;
+      height: 28px;
+      font-size: 1rem;
+      display: flex;
+   }
+}
+
+/* Extra small screens */
+@media (max-width: 360px) {
+   .gallery-carousel-item {
+      flex: 0 0 110px;
+      min-width: 110px;
+   }
+   
+   .carousel-btn {
+      width: 24px;
+      height: 24px;
+      font-size: 0.9rem;
    }
 }
 
