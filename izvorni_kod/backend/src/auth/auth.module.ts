@@ -13,6 +13,7 @@ import { GenerateTokensProvider } from './providers/generate-tokens.provider';
 import { RefreshTokensProvider } from './providers/refresh-tokens.provider';
 import { GoogleAuthenticationController } from './social/google-authentication.controller';
 import { GoogleAuthentificationService } from './social/providers/google-authentification.service';
+import { RolesGuard } from './guards/roles/roles.guard';
 
 
 @Module({
@@ -27,12 +28,13 @@ import { GoogleAuthentificationService } from './social/providers/google-authent
         GenerateTokensProvider,
         RefreshTokensProvider,
         GoogleAuthentificationService,
+        RolesGuard,
     ],
     imports: [
         forwardRef(() => UsersModule),
         ConfigModule.forFeature(jwtConfig),
         JwtModule.registerAsync(jwtConfig.asProvider()),
     ],
-    exports: [AuthService, HashingProvider],
+    exports: [AuthService, HashingProvider, RolesGuard],
 })
 export class AuthModule {}
