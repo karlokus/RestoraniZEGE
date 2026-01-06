@@ -8,7 +8,6 @@ import {
     Param,
     Query,
     Req,
-    UseGuards,
 } from '@nestjs/common';
 import {
     ApiTags,
@@ -27,7 +26,6 @@ import { AuthType } from 'src/auth/enums/auth-type.enum';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { REQUEST_USER_KEY } from 'src/auth/constants/auth.constants';
 import { UserRole } from 'src/users/enums/userRole.enum';
-import { OwnershipGuard } from 'src/auth/guards/ownership/ownership.guard';
 
 
 @ApiTags('Events')
@@ -76,7 +74,6 @@ export class EventsController {
 
     @Post()
     @Roles(UserRole.restaurant, UserRole.admin)
-    @UseGuards(OwnershipGuard)
     @ApiBearerAuth('access-token')
     @ApiOperation({ summary: 'Kreiranje novog eventa (samo vlasnik restorana)' })
     @ApiResponse({ status: 201, description: 'Event uspješno kreiran' })
@@ -95,7 +92,6 @@ export class EventsController {
 
     @Patch(':id')
     @Roles(UserRole.restaurant, UserRole.admin)
-    @UseGuards(OwnershipGuard)
     @ApiBearerAuth('access-token')
     @ApiOperation({ summary: 'Ažuriranje eventa (samo vlasnik restorana)' })
     @ApiParam({ name: 'id', description: 'UUID eventa', type: 'string' })

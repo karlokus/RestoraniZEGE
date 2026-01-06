@@ -98,13 +98,13 @@ export class CreateRestaurantDto {
     website?: string;
 
     @ApiPropertyOptional({
-        example: 'Pon-Ned 10:00-23:00',
-        maxLength: 96,
-        description: 'Radno vrijeme',
+        example: '{"monday":"10:00-22:00","tuesday":"10:00-22:00","wednesday":"10:00-22:00","thursday":"10:00-22:00","friday":"10:00-22:00","saturday":"10:00-23:00","sunday":"Zatvoreno"}',
+        maxLength: 500,
+        description: 'Radno vrijeme (JSON format sa danima tjedna)',
     })
     @IsString()
     @IsOptional()
-    @MaxLength(96)
+    @MaxLength(500)
     workingHours?: string;
 
     @ApiPropertyOptional({

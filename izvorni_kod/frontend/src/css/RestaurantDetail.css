@@ -28,7 +28,7 @@
 
 /* Modal container with popup animation */
 .restaurant-detail-modal {
-   background-color: var(--bg-primary);
+   background-color: #ffffff;
    border-radius: 16px;
    max-width: 900px;
    width: 100%;
@@ -713,7 +713,7 @@ a.contact-value:hover {
       flex: 0 0 110px;
       min-width: 110px;
    }
-   
+
    .carousel-btn {
       width: 24px;
       height: 24px;
@@ -737,4 +737,126 @@ a.contact-value:hover {
 
 .restaurant-detail-modal::-webkit-scrollbar-thumb:hover {
    background-color: #aaa;
+}
+
+/* Add Review Section (Combined Rating + Comment) */
+.add-review {
+   display: flex;
+   flex-direction: column;
+   gap: 1rem;
+}
+
+.rating-row {
+   display: flex;
+   align-items: center;
+   gap: 1rem;
+   flex-wrap: wrap;
+}
+
+.rating-label {
+   font-weight: 500;
+   color: #333;
+}
+
+.star-input {
+   display: flex;
+   gap: 0.25rem;
+}
+
+.star-btn {
+   background: none;
+   border: none;
+   font-size: 1.8rem;
+   color: #ddd;
+   cursor: pointer;
+   padding: 0;
+   transition: all 0.15s ease;
+}
+
+.star-btn:hover,
+.star-btn.filled {
+   color: #f59e0b;
+   transform: scale(1.1);
+}
+
+.comment-input {
+   width: 100%;
+   padding: 1rem;
+   border: 2px solid #e5e7eb;
+   border-radius: 12px;
+   font-size: 1rem;
+   font-family: inherit;
+   resize: vertical;
+   min-height: 100px;
+   transition: border-color 0.2s ease;
+}
+
+.comment-input:focus {
+   outline: none;
+   border-color: #10b981;
+}
+
+.comment-input::placeholder {
+   color: #9ca3af;
+}
+
+.submit-review-btn {
+   align-self: flex-end;
+   background-color: #10b981;
+   color: white;
+   border: none;
+   padding: 0.75rem 1.5rem;
+   border-radius: 8px;
+   font-weight: 500;
+   cursor: pointer;
+   transition: all 0.2s ease;
+}
+
+.submit-review-btn:hover:not(:disabled) {
+   background-color: #059669;
+}
+
+.submit-review-btn:disabled {
+   opacity: 0.6;
+   cursor: not-allowed;
+}
+
+/* Login prompt */
+.login-prompt {
+   background-color: #f3f4f6;
+   text-align: center;
+   padding: 1.5rem !important;
+   border-radius: 12px;
+}
+
+.login-prompt p {
+   margin: 0;
+   color: #6b7280;
+}
+
+.login-prompt a {
+   color: #10b981;
+   font-weight: 500;
+   text-decoration: none;
+}
+
+.login-prompt a:hover {
+   text-decoration: underline;
+}
+
+/* Responsive adjustments for add rating/comment */
+@media (max-width: 480px) {
+   .add-rating {
+      flex-direction: column;
+      align-items: flex-start;
+   }
+
+   .star-btn {
+      font-size: 2rem;
+   }
+
+   .submit-rating-btn,
+   .submit-comment-btn {
+      width: 100%;
+   }
 }

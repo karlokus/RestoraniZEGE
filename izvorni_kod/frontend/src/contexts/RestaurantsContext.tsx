@@ -59,15 +59,24 @@ export function RestaurantsProvider({ children }: { children: ReactNode }) {
          setLoading(true);
          const data = await api.getRestaurants();
          // Mapiraj backend podatke na frontend Restaurant tip
-         const mappedRestaurants: Restaurant[] = data.map((r: any) => ({
-            id: r.id,
-            name: r.name || '',
-            cuisine: r.role || r.cuisineType || r.cuisine || '',
-            location: r.adress || r.city || r.location || '',
-            rating: r.rating || 0,
-            priceLevel: r.priceLevel || 0,
-            imageUrl: r.imageUrl || '',
-         }));
+         const mappedRestaurants: Restaurant[] = data.map((r: any) => {
+            // Pronađi primarnu sliku ili prvu sliku iz photos arraya
+            let imageUrl = r.imageUrl || '';
+            if (r.photos && Array.isArray(r.photos) && r.photos.length > 0) {
+               const primaryPhoto = r.photos.find((p: any) => p.isPrimary);
+               imageUrl = primaryPhoto?.photoUrl || r.photos[0]?.photoUrl || imageUrl;
+            }
+            
+            return {
+               id: r.id,
+               name: r.name || '',
+               cuisine: r.cuisineType || r.cuisine || '',
+               location: r.adress ? `${r.adress}${r.city ? ', ' + r.city : ''}` : (r.city || r.location || ''),
+               rating: r.averageRating || r.rating || 0,
+               priceLevel: r.priceLevel || 0,
+               imageUrl: imageUrl,
+            };
+         });
          setRestaurants(mappedRestaurants);
          setError(null);
       } catch (err: any) {

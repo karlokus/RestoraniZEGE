@@ -86,6 +86,10 @@ export class EventsService {
         updateEventDto: UpdateEventDto,
         userId: number
     ): Promise<Event> {
+        console.log('Updating event:', id);
+        console.log('Update DTO:', updateEventDto);
+        console.log('User ID:', userId);
+
         // Dohvati event sa restoranom i vlasnikom
         const event = await this.eventsRepository.findOne({
             where: { id },
@@ -95,6 +99,8 @@ export class EventsService {
         if (!event) {
             throw new NotFoundException('Event not found.');
         }
+
+        console.log('Found event:', event);
 
         // Provjeri vlasništvo
         if (event.restaurant.user.id !== userId) {
@@ -109,7 +115,14 @@ export class EventsService {
             event.description = updateEventDto.description;
         }
         if (updateEventDto.eventDate) {
-            event.eventDate = new Date(updateEventDto.eventDate);
+            console.log('Updating eventDate to:', updateEventDto.eventDate);
+            try {
+                event.eventDate = new Date(updateEventDto.eventDate);
+                console.log('Parsed date:', event.eventDate);
+            } catch (err) {
+                console.error('Error parsing date:', err);
+                throw err;
+            }
         }
         if (updateEventDto.imageUrl !== undefined) {
             event.imageUrl = updateEventDto.imageUrl;
@@ -118,6 +131,7 @@ export class EventsService {
             event.isActive = updateEventDto.isActive;
         }
 
+        console.log('Saving event:', event);
         return await this.eventsRepository.save(event);
     }
 

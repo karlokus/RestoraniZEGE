@@ -1,9 +1,12 @@
 import { v2 as cloudinary } from 'cloudinary';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import * as dotenv from 'dotenv';
+import * as path from 'path';
 
 // Učitaj .env file PRIJE čitanja environment varijabli
-dotenv.config();
+const ENV = process.env.NODE_ENV;
+const envPath = ENV ? `.env.${ENV}` : '.env';
+dotenv.config({ path: path.resolve(process.cwd(), envPath) });
 
 // Cloudinary konfiguracija - direktno čitanje iz process.env
 const cloudName = process.env.CLOUDINARY_CLOUD_NAME;

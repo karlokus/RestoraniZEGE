@@ -1,0 +1,213 @@
+/* Create Restaurant Page Styles */
+
+.create-restaurant-page {
+   min-height: 100vh;
+   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+   padding: 2rem;
+}
+
+.create-restaurant-container {
+   max-width: 800px;
+   margin: 0 auto;
+   background: white;
+   border-radius: 16px;
+   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+   overflow: hidden;
+}
+
+.create-restaurant-header {
+   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+   color: white;
+   padding: 2rem;
+   text-align: center;
+}
+
+.create-restaurant-header h1 {
+   margin: 0 0 0.5rem 0;
+   font-size: 1.75rem;
+   font-weight: 700;
+}
+
+.create-restaurant-header p {
+   margin: 0;
+   opacity: 0.9;
+   font-size: 1rem;
+}
+
+.create-restaurant-form {
+   padding: 2rem;
+}
+
+.form-section {
+   margin-bottom: 2rem;
+   padding-bottom: 2rem;
+   border-bottom: 1px solid #e5e7eb;
+}
+
+.form-section:last-of-type {
+   border-bottom: none;
+   margin-bottom: 1rem;
+}
+
+.form-section h2 {
+   font-size: 1.1rem;
+   font-weight: 600;
+   color: #374151;
+   margin: 0 0 1rem 0;
+   display: flex;
+   align-items: center;
+   gap: 0.5rem;
+}
+
+.form-section h2::before {
+   content: '';
+   width: 4px;
+   height: 20px;
+   background: #10b981;
+   border-radius: 2px;
+}
+
+.form-group {
+   margin-bottom: 1.25rem;
+}
+
+.form-group label {
+   display: block;
+   font-weight: 500;
+   color: #374151;
+   margin-bottom: 0.5rem;
+   font-size: 0.9rem;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+   width: 100%;
+   padding: 0.75rem 1rem;
+   border: 2px solid #e5e7eb;
+   border-radius: 8px;
+   font-size: 1rem;
+   font-family: inherit;
+   transition: all 0.2s ease;
+   background: white;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+   outline: none;
+   border-color: #10b981;
+   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+   color: #9ca3af;
+}
+
+.form-group textarea {
+   resize: vertical;
+   min-height: 100px;
+}
+
+.form-group select {
+   cursor: pointer;
+   appearance: none;
+   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+   background-position: right 0.75rem center;
+   background-repeat: no-repeat;
+   background-size: 1.5em 1.5em;
+   padding-right: 2.5rem;
+}
+
+.form-row {
+   display: grid;
+   grid-template-columns: 1fr 1fr;
+   gap: 1rem;
+}
+
+.form-error {
+   background: #fef2f2;
+   border: 1px solid #fecaca;
+   color: #dc2626;
+   padding: 1rem;
+   border-radius: 8px;
+   margin-bottom: 1rem;
+   font-size: 0.9rem;
+}
+
+.form-actions {
+   display: flex;
+   gap: 1rem;
+   justify-content: flex-end;
+   padding-top: 1rem;
+}
+
+.btn-primary,
+.btn-secondary {
+   padding: 0.75rem 1.5rem;
+   border-radius: 8px;
+   font-size: 1rem;
+   font-weight: 500;
+   cursor: pointer;
+   transition: all 0.2s ease;
+   border: none;
+}
+
+.btn-primary {
+   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+   color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+   transform: translateY(-1px);
+   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.btn-primary:disabled {
+   opacity: 0.6;
+   cursor: not-allowed;
+}
+
+.btn-secondary {
+   background: #f3f4f6;
+   color: #374151;
+   border: 1px solid #e5e7eb;
+}
+
+.btn-secondary:hover:not(:disabled) {
+   background: #e5e7eb;
+}
+
+/* Working Hours Grid */
+.working-hours-grid {
+   display: grid;
+   grid-template-columns: repeat(2, 1fr);
+   gap: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+   .create-restaurant-page {
+      padding: 1rem;
+   }
+
+   .create-restaurant-form {
+      padding: 1.5rem;
+   }
+
+   .form-row,
+   .working-hours-grid {
+      grid-template-columns: 1fr;
+   }
+
+   .form-actions {
+      flex-direction: column;
+   }
+
+   .btn-primary,
+   .btn-secondary {
+      width: 100%;
+      text-align: center;
+   }
+}

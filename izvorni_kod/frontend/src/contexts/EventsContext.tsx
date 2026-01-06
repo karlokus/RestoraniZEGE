@@ -1,12 +1,12 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { API_BASE_URL, API_ENDPOINTS } from '../config/api.config';
 
 export type Event = {
-   id: number;
+   id: string;
    restaurantId: number;
    title: string;
    description: string;
-   startDate: string;
-   endDate: string;
+   eventDate: string;
    imageUrl?: string;
    restaurantName?: string;
 }
@@ -36,7 +36,7 @@ export function EventsProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       setError(null);
       try {
-         const response = await fetch('http://localhost:3000/api/events', {
+         const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.EVENTS}`, {
             credentials: 'include',
          });
 
@@ -56,7 +56,7 @@ export function EventsProvider({ children }: { children: ReactNode }) {
 
    const fetchEventsByRestaurant = async (restaurantId: number): Promise<Event[]> => {
       try {
-         const response = await fetch(`http://localhost:3000/api/events/restaurant/${restaurantId}`, {
+         const response = await fetch(`${API_BASE_URL}/events?restaurantId=${restaurantId}`, {
             credentials: 'include',
          });
 
@@ -73,8 +73,8 @@ export function EventsProvider({ children }: { children: ReactNode }) {
 
    const getUpcomingEvents = (): Event[] => {
       const now = new Date();
-      return events.filter(event => new Date(event.startDate) > now)
-         .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+      return events.filter(event => new Date(event.eventDate) > now)
+         .sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime());
    };
 
    return (

@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useFavoritesContext } from "../contexts/FavoritesContext";
 import { useAuthContext } from "../contexts/AuthContext";
-import type { Event } from "../contexts/EventsContext";
 import { api } from "../services/api";
 import type { Restaurant } from "./RestaurantCard";
+import type { Comment as ApiComment, Rating as ApiRating, RestaurantPhoto, Event as ApiEvent } from "../services/api";
 import "../css/RestaurantDetail.css";
 
 export interface RestaurantDetails extends Restaurant {
@@ -13,7 +13,7 @@ export interface RestaurantDetails extends Restaurant {
    website?: string;
    workingHours?: WorkingHours;
    gallery?: string[];
-   events?: Event[];
+   events?: EventDisplay[];
    reviews?: Review[];
 }
 
@@ -25,6 +25,15 @@ export interface WorkingHours {
    friday?: string;
    saturday?: string;
    sunday?: string;
+}
+
+export interface EventDisplay {
+   id: string;
+   restaurantId: number;
+   title: string;
+   description: string;
+   eventDate: string;
+   imageUrl?: string;
 }
 
 export interface Review {
@@ -42,86 +51,6 @@ interface RestaurantDetailProps {
    onClose: () => void;
 }
 
-// Mock data
-const getMockRestaurantDetails = (restaurant: Restaurant): RestaurantDetails => {
-   const mockWorkingHours: WorkingHours = {
-      monday: "11:00 - 23:00",
-      tuesday: "11:00 - 23:00",
-      wednesday: "11:00 - 23:00",
-      thursday: "11:00 - 23:00",
-      friday: "11:00 - 00:00",
-      saturday: "12:00 - 00:00",
-      sunday: "12:00 - 23:00",
-   };
-
-   const mockEvents: Event[] = [
-      {
-         id: 1,
-         restaurantId: restaurant.id,
-         title: "Večer dalmatinske kuhinje",
-         description: "Uživajte u specijalitetima dalmatinske kuhinje uz živu glazbu.",
-         startDate: "2024-12-20T19:00:00Z",
-         endDate: "2024-12-20T22:00:00Z",
-      },
-      {
-         id: 2,
-         restaurantId: restaurant.id,
-         title: "Degustacija vina",
-         description: "Isprobajte vrhunska hrvatska vina uz stručno vodstvo sommeliera.",
-         startDate: "2025-01-15T18:00:00Z",
-         endDate: "2025-01-15T21:00:00Z",
-      },
-   ];
-
-   const mockReviews: Review[] = [
-      {
-         id: 1,
-         userId: 1,
-         userName: "Marko P.",
-         rating: 5,
-         comment: "Izvrsna hrana i usluga! Preporučujem svima koji vole autentičnu hrvatsku kuhinju.",
-         createdAt: "2024-12-15T14:30:00Z",
-      },
-      {
-         id: 2,
-         userId: 2,
-         userName: "Ana K.",
-         rating: 4,
-         comment: "Predivan ambijent i ukusna jela. Cijene su malo više, ali kvaliteta opravdava.",
-         createdAt: "2024-12-10T18:45:00Z",
-      },
-      {
-         id: 3,
-         userId: 3,
-         userName: "Ivan M.",
-         rating: 5,
-         comment: "Odlično mjesto za poslovne ručkove. Osoblje je ljubazno i profesionalno.",
-         createdAt: "2024-12-05T12:00:00Z",
-      },
-   ];
-
-   const mockGallery = [
-      restaurant.imageUrl || "https://via.placeholder.com/400x300?text=Restaurant+1",
-      "https://via.placeholder.com/400x300?text=Interior",
-      "https://via.placeholder.com/400x300?text=Food+1",
-      "https://via.placeholder.com/400x300?text=Food+2",
-      "https://via.placeholder.com/400x300?text=Dining+Area",
-      "https://via.placeholder.com/400x300?text=Restaurant+2",
-   ];
-
-   return {
-      ...restaurant,
-      description: `Autentičan dalmatinski restoran s tradicijom od 1985. godine. Nudimo specijalitete primorske kuhinje u lijepoj ambijentu s pogledom na Grad.`,
-      email: "info@restoran.hr",
-      phone: "+385 1 234 5678",
-      website: "www.restoran.hr",
-      workingHours: mockWorkingHours,
-      gallery: mockGallery,
-      events: mockEvents,
-      reviews: mockReviews,
-   };
-};
-
 function RestaurantDetail({ restaurant, isOpen, onClose }: RestaurantDetailProps) {
    const { isAuthenticated } = useAuthContext();
    const { toggleFavorite, isFavorite } = useFavoritesContext();
@@ -130,6 +59,13 @@ function RestaurantDetail({ restaurant, isOpen, onClose }: RestaurantDetailProps
    const [loading, setLoading] = useState(true);
    const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
    const [carouselIndex, setCarouselIndex] = useState(0);
+   const [refreshTrigger, setRefreshTrigger] = useState(0); // Za refreshanje podataka
+
+   // State za recenziju (ocjena + komentar)
+   const [newComment, setNewComment] = useState("");
+   const [newRating, setNewRating] = useState(0);
+   const [hoverRating, setHoverRating] = useState(0);
+   const [submittingRating, setSubmittingRating] = useState(false);
 
    // Refs for swipe functionality
    const galleryRef = useRef<HTMLDivElement>(null);
@@ -139,73 +75,123 @@ function RestaurantDetail({ restaurant, isOpen, onClose }: RestaurantDetailProps
    const isFav = isFavorite(restaurant.id);
 
    useEffect(() => {
-      if (isOpen && restaurant) {
+      if (!isOpen || !restaurant) return;
+
+      const fetchRestaurantDetails = async () => {
          setLoading(true);
+         try {
+            // Dohvati osnovne podatke restorana
+            const restaurantData = await api.getRestaurantById(restaurant.id);
 
-         // Pokusaj dohvacanja preko API-ja
-         const fetchDetails = async () => {
-            try {
-               const apiData = await api.getRestaurantById(restaurant.id);
+            // Dohvati slike, komentare, ocjene i događaje paralelno
+            const [photos, comments, ratings, events] = await Promise.all([
+               api.getPhotosByRestaurant(restaurant.id).catch(() => []),
+               api.getCommentsByRestaurant(restaurant.id).catch(() => []),
+               api.getRatingsByRestaurant(restaurant.id).catch(() => []),
+               fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/events?restaurantId=${restaurant.id}`)
+                  .then(res => res.ok ? res.json() : [])
+                  .catch(() => []),
+            ]);
 
-               // RestaurantDetails format
-               const mappedDetails: RestaurantDetails = {
-                  id: apiData.id,
-                  name: apiData.name || restaurant.name,
-                  cuisine: apiData.role || apiData.cuisineType || restaurant.cuisine,
-                  location: apiData.adress || apiData.city || restaurant.location,
-                  rating: apiData.rating || restaurant.rating,
-                  priceLevel: apiData.priceLevel || restaurant.priceLevel,
-                  imageUrl: apiData.imageUrl || restaurant.imageUrl,
-                  description: apiData.description,
-                  email: apiData.email,
-                  phone: apiData.phone,
-                  website: apiData.website,
-                  workingHours: apiData.workingHours ? parseWorkingHours(apiData.workingHours) : undefined,
-                  gallery: apiData.gallery || [restaurant.imageUrl || "https://via.placeholder.com/400x300?text=Restaurant"],
-                  events: apiData.events || [],
-                  reviews: apiData.reviews || [],
-               };
+            // Mapiraj komentare i ocjene u Reviews format
+            const reviews: Review[] = comments.map((comment: ApiComment) => ({
+               id: comment.id,
+               userId: comment.userId,
+               userName: comment.user 
+                  ? `${comment.user.firstName} ${comment.user.lastName}`.trim() 
+                  : `Korisnik ${comment.userId}`,
+               rating: 0, // Komentari nemaju rating
+               comment: comment.content,
+               createdAt: comment.createdAt,
+            }));
 
-               // ako nema API onda mock data
-               if (!mappedDetails.workingHours) {
-                  mappedDetails.workingHours = getMockRestaurantDetails(restaurant).workingHours;
-               }
-               if (!mappedDetails.gallery || mappedDetails.gallery.length === 0) {
-                  mappedDetails.gallery = getMockRestaurantDetails(restaurant).gallery;
-               }
-               if (!mappedDetails.events || mappedDetails.events.length === 0) {
-                  mappedDetails.events = getMockRestaurantDetails(restaurant).events;
-               }
-               if (!mappedDetails.reviews || mappedDetails.reviews.length === 0) {
-                  mappedDetails.reviews = getMockRestaurantDetails(restaurant).reviews;
-               }
-               if (!mappedDetails.description) {
-                  mappedDetails.description = getMockRestaurantDetails(restaurant).description;
-               }
-               if (!mappedDetails.email) {
-                  mappedDetails.email = getMockRestaurantDetails(restaurant).email;
-               }
-               if (!mappedDetails.phone) {
-                  mappedDetails.phone = getMockRestaurantDetails(restaurant).phone;
-               }
+            // Ako imamo ratings, dodaj ih kao reviews s ocjenom
+            const ratingsAsReviews: Review[] = ratings.map((rating: ApiRating) => ({
+               id: rating.id + 10000, // Offset da izbjegnemo duplikate ID-a
+               userId: rating.userId,
+               userName: rating.user 
+                  ? `${rating.user.firstName} ${rating.user.lastName}`.trim() 
+                  : `Korisnik ${rating.userId}`,
+               rating: rating.rating,
+               comment: rating.comment || "",
+               createdAt: rating.createdAt,
+            }));
 
-               setDetails(mappedDetails);
-            } catch (error) {
-               console.log('Using mock data for restaurant details');
-               setDetails(getMockRestaurantDetails(restaurant));
-            }
+            // Kombiniraj komentare i ocjene, sortiraj po datumu
+            const allReviews = [...reviews, ...ratingsAsReviews]
+               .filter(r => r.comment || r.rating > 0) // Filtriraj prazne
+               .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
+            // Mapiraj slike u gallery
+            const gallery = photos.length > 0 
+               ? photos.map((p: RestaurantPhoto) => p.photoUrl)
+               : [restaurant.imageUrl || "https://via.placeholder.com/400x300?text=Restaurant"];
+
+
+            // Mapiraj events
+            const eventsList: EventDisplay[] = events.map((e: ApiEvent) => ({
+               id: e.id,
+               restaurantId: e.restaurantId,
+               title: e.title,
+               description: e.description,
+               eventDate: e.eventDate,
+               imageUrl: e.imageUrl,
+            }));
+
+            // Parse working hours
+            const workingHours = parseWorkingHours(restaurantData.workingHours);
+
+            const mappedDetails: RestaurantDetails = {
+               id: restaurantData.id,
+               name: restaurantData.name || restaurant.name,
+               cuisine: restaurantData.cuisineType || restaurant.cuisine,
+               location: restaurantData.adress 
+                  ? `${restaurantData.adress}${restaurantData.city ? ', ' + restaurantData.city : ''}`
+                  : restaurant.location,
+               rating: restaurantData.averageRating || restaurant.rating,
+               priceLevel: restaurant.priceLevel,
+               imageUrl: photos.find((p: RestaurantPhoto) => p.isPrimary)?.photoUrl || photos[0]?.photoUrl || restaurant.imageUrl,
+               description: restaurantData.description,
+               email: restaurantData.email,
+               phone: restaurantData.phone,
+               website: restaurantData.website,
+               workingHours: workingHours,
+               gallery: gallery,
+               events: eventsList,
+               reviews: allReviews,
+            };
+
+            setDetails(mappedDetails);
+         } catch (error) {
+            console.error('Failed to fetch restaurant details:', error);
+            // Fallback na osnovne podatke
+            setDetails({
+               ...restaurant,
+               gallery: [restaurant.imageUrl || "https://via.placeholder.com/400x300?text=Restaurant"],
+               events: [],
+               reviews: [],
+            });
+         } finally {
             setLoading(false);
-         };
+         }
+      };
 
-         fetchDetails();
-      }
-   }, [isOpen, restaurant]);
+      fetchRestaurantDetails();
+   }, [isOpen, restaurant.id, refreshTrigger]); // Dodaj refreshTrigger u dependencies
 
    // Helper function to parse working hours string to WorkingHours object
-   const parseWorkingHours = (hoursString: string): WorkingHours | undefined => {
-      // Simple parsing - in production this would be more robust
+   const parseWorkingHours = (hoursString?: string): WorkingHours | undefined => {
       if (!hoursString) return undefined;
+
+      // Pokušaj parsirati JSON format
+      try {
+         const parsed = JSON.parse(hoursString);
+         if (typeof parsed === 'object') {
+            return parsed as WorkingHours;
+         }
+      } catch {
+         // Nije JSON, koristi string za sve dane
+      }
 
       return {
          monday: hoursString,
@@ -216,6 +202,33 @@ function RestaurantDetail({ restaurant, isOpen, onClose }: RestaurantDetailProps
          saturday: hoursString,
          sunday: hoursString,
       };
+   };
+
+   // Submit novu ocjenu (s opcionalnim komentarom)
+   const handleSubmitReview = async () => {
+      if (newRating === 0 || !isAuthenticated) return;
+
+      setSubmittingRating(true);
+      try {
+         await api.createRating({
+            restaurantId: restaurant.id,
+            rating: Math.round(newRating),
+            ...(newComment.trim() && { comment: newComment.trim() }),
+         });
+         setNewRating(0);
+         setNewComment("");
+         setRefreshTrigger(prev => prev + 1);
+         alert('Ocjena uspješno dodana!');
+      } catch (error: any) {
+         console.error('Failed to submit review:', error);
+         if (error.message?.includes('already')) {
+            alert('Već ste ocijenili ovaj restoran.');
+         } else {
+            alert('Nije moguće dodati ocjenu. Pokušajte ponovo.');
+         }
+      } finally {
+         setSubmittingRating(false);
+      }
    };
 
    useEffect(() => {
@@ -323,8 +336,8 @@ function RestaurantDetail({ restaurant, isOpen, onClose }: RestaurantDetailProps
                            )}
                         </div>
                         <div className="detail-rating">
-                           <div className="stars">{renderStars(details.rating)}</div>
-                           <span className="rating-value">{details.rating.toFixed(1)}</span>
+                           <div className="stars">{renderStars(Number(details.rating) || 0)}</div>
+                           <span className="rating-value">{(Number(details.rating) || 0).toFixed(1)}</span>
                            <span className="rating-count">({details.reviews?.length || 0} recenzija)</span>
                         </div>
                         <p className="detail-cuisine">{details.cuisine}</p>
@@ -485,9 +498,9 @@ function RestaurantDetail({ restaurant, isOpen, onClose }: RestaurantDetailProps
                                     <h3 className="event-title">{event.title}</h3>
                                     <div className="event-date">
                                        <span className="event-icon">📅</span>
-                                       {formatDate(event.startDate)}
+                                       {formatDate(event.eventDate)}
                                        <span className="event-icon">🕐</span>
-                                       {formatTime(event.startDate)}
+                                       {formatTime(event.eventDate)}
                                     </div>
                                     {event.description && (
                                        <p className="event-description">{event.description}</p>
@@ -512,15 +525,71 @@ function RestaurantDetail({ restaurant, isOpen, onClose }: RestaurantDetailProps
                                        </div>
                                        <span className="reviewer-name">{review.userName}</span>
                                     </div>
-                                    <div className="review-rating">
-                                       {renderStars(review.rating)}
-                                    </div>
+                                    {review.rating > 0 && (
+                                       <div className="review-rating">
+                                          {renderStars(review.rating)}
+                                       </div>
+                                    )}
                                  </div>
-                                 <p className="review-comment">{review.comment}</p>
+                                 {review.comment && <p className="review-comment">{review.comment}</p>}
                                  <span className="review-date">{formatDate(review.createdAt)}</span>
                               </div>
                            ))}
                         </div>
+                     </div>
+                  )}
+
+                  {/* Sekcija za dodavanje ocjene i komentara */}
+                  {isAuthenticated && (
+                     <div className="detail-section">
+                        <h2 className="section-title">Ostavite svoju recenziju</h2>
+                        
+                        {/* Combined rating and comment input */}
+                        <div className="add-review">
+                           <div className="rating-row">
+                              <span className="rating-label">Vaša ocjena:</span>
+                              <div className="star-input">
+                                 {[1, 2, 3, 4, 5].map((star) => (
+                                    <button
+                                       key={star}
+                                       type="button"
+                                       className={`star-btn ${(hoverRating || newRating) >= star ? 'filled' : ''}`}
+                                       onMouseEnter={() => setHoverRating(star)}
+                                       onMouseLeave={() => setHoverRating(0)}
+                                       onClick={() => setNewRating(star)}
+                                    >
+                                       ★
+                                    </button>
+                                 ))}
+                              </div>
+                           </div>
+                           
+                           <textarea
+                              className="comment-input"
+                              placeholder="Napišite svoj komentar o restoranu (opciono)..."
+                              value={newComment}
+                              onChange={(e) => setNewComment(e.target.value)}
+                              rows={4}
+                           />
+                           
+                           {newRating > 0 && (
+                              <button 
+                                 className="submit-review-btn"
+                                 onClick={handleSubmitReview}
+                                 disabled={submittingRating}
+                              >
+                                 {submittingRating ? 'Šaljem...' : 'Objavi recenziju'}
+                              </button>
+                           )}
+                        </div>
+                     </div>
+                  )}
+
+                  {!isAuthenticated && (
+                     <div className="detail-section login-prompt">
+                        <p>
+                           <a href="/login">Prijavite se</a> kako biste mogli ostaviti ocjenu ili komentar.
+                        </p>
                      </div>
                   )}
                </div>

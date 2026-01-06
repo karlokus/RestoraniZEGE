@@ -14,9 +14,9 @@ type AuthContextType = {
    user: User | null;
    isAuthenticated: boolean;
    loading: boolean;
-   login: (data: SignInData) => Promise<void>;
+   login: (data: SignInData) => Promise<User | null>;
    register: (data: RegisterData) => Promise<void>;
-   googleAuth: (data: GoogleAuthData) => Promise<void>;
+   googleAuth: (data: GoogleAuthData) => Promise<User | null>;
    logout: () => Promise<void>;
    refreshAccessToken: () => Promise<boolean>;
 }
@@ -100,7 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    };
 
 
-   const login = async (data: SignInData): Promise<void> => {
+   const login = async (data: SignInData): Promise<User | null> => {
       try {
          const response = await api.signIn(data);
          storeTokens(response.accessToken, response.refreshToken);
@@ -110,7 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Fetch full user data from backend
             try {
                const userData = await api.getUserById(decoded.sub);
-               setUser({
+               const userObj: User = {
                   id: userData.id,
                   firstName: userData.firstName || '',
                   lastName: userData.lastName || '',
@@ -119,14 +119,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                   name: userData.firstName && userData.lastName
                      ? `${userData.firstName} ${userData.lastName}`
                      : userData.email || '',
-               });
+               };
+               setUser(userObj);
+               return userObj;
             } catch (userError) {
                // If fetching user fails, fall back to token data
                console.warn('Failed to fetch user data, using token data:', userError);
                await loadUserFromToken();
+               return user;
             }
          } else {
             await loadUserFromToken();
+            return user;
          }
       } catch (error: any) {
          throw new Error(error.message || 'Login failed');
@@ -157,7 +161,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
    };
 
-   const googleAuth = async (data: GoogleAuthData): Promise<void> => {
+   const googleAuth = async (data: GoogleAuthData): Promise<User | null> => {
       try {
          const response = await api.googleAuth(data);
          storeTokens(response.accessToken, response.refreshToken);
@@ -168,7 +172,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Fetch full user data from backend
             try {
                const userData = await api.getUserById(decoded.sub);
-               setUser({
+               const userObj: User = {
                   id: userData.id,
                   firstName: userData.firstName || '',
                   lastName: userData.lastName || '',
@@ -177,14 +181,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                   name: userData.firstName && userData.lastName
                      ? `${userData.firstName} ${userData.lastName}`
                      : userData.email || '',
-               });
+               };
+               setUser(userObj);
+               return userObj;
             } catch (userError) {
                // If fetching user fails, fall back to token data
                console.warn('Failed to fetch user data, using token data:', userError);
                await loadUserFromToken();
+               return user;
             }
          } else {
             await loadUserFromToken();
+            return user;
          }
       } catch (error: any) {
          throw new Error(error.message || 'Google authentication failed');

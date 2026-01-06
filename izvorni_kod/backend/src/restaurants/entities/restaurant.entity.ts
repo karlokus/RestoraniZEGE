@@ -94,11 +94,11 @@ export class Restaurant {
 
     @Column({
         type: 'varchar',
-        length: 96,
+        length: 500,
         nullable: true,
         unique: false,
     })
-    workingHours: string;   // todo -> napraviti poseban data WorkingHours
+    workingHours: string;   // JSON string sa radnim vremenom za svaki dan
 
     @Column({
         type: 'boolean',

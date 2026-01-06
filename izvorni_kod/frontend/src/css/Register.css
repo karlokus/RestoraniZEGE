@@ -1,4 +1,4 @@
-:root{
+:root {
   --card-bg: #fff;
   --page-bg: #fbf7f2;
   --muted: #a89b8e;
@@ -6,20 +6,82 @@
   --accent-light: #caa67f;
 }
 
-body { background-color: var(--page-bg); }
+body {
+  background-color: var(--page-bg);
+}
 
-.login-page{ min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
 
-.login-card{ width: 420px; background: var(--card-bg); border-radius: 12px; padding: 2.25rem 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid rgba(200,180,150,0.25); text-align: left; }
-.brand{ text-align: center; margin: 0 0 0.25rem 0; font-size: 1.6rem; color: var(--accent-dark); }
-.subtitle{ text-align: center; margin: 0 0 1rem 0; color: var(--muted); font-size: 0.9rem; }
+.login-card {
+  width: 420px;
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 2.25rem 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(200, 180, 150, 0.25);
+  text-align: left;
+}
 
-.login-form{ display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.25rem; }
-.field-label{ font-size: 0.85rem; color: var(--muted); }
-.input{ padding: 0.8rem 1rem; border-radius: 8px; border: 1px solid #e3dcd4; background: #fff; font-size: 0.95rem; }
-.error{ color: #a94442; font-size: 0.9rem; margin-top: 0.25rem; }
-.submit-btn{ margin-top: 0.6rem; background: linear-gradient(180deg, var(--accent-dark), #38261c); color: white; border: none; padding: 0.85rem 1rem; border-radius: 10px; font-weight: 600; cursor: pointer; }
-.submit-btn:hover{ transform: translateY(-1px); }
+.brand {
+  text-align: center;
+  margin: 0 0 0.25rem 0;
+  font-size: 1.6rem;
+  color: var(--accent-dark);
+}
+
+.subtitle {
+  text-align: center;
+  margin: 0 0 1rem 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.field-label {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.input {
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #e3dcd4;
+  background: #fff;
+  font-size: 0.95rem;
+}
+
+.error {
+  color: #a94442;
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+}
+
+.submit-btn {
+  margin-top: 0.6rem;
+  background: linear-gradient(180deg, var(--accent-dark), #38261c);
+  color: white;
+  border: none;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.submit-btn:hover {
+  transform: translateY(-1px);
+}
 
 .divider {
   margin: 1.25rem 0;
@@ -58,7 +120,7 @@ body { background-color: var(--page-bg); }
   contain: layout;
 }
 
-.google-button-container > div {
+.google-button-container>div {
   width: 100% !important;
   max-width: 100%;
   display: flex;
@@ -96,7 +158,7 @@ body { background-color: var(--page-bg); }
 }
 
 /* Ensure proper spacing and alignment for nested divs */
-.google-button-container > div > div {
+.google-button-container>div>div {
   width: 100% !important;
   max-width: 100% !important;
   display: flex !important;
@@ -107,7 +169,7 @@ body { background-color: var(--page-bg); }
 }
 
 /* Additional wrapper styling */
-.google-button-container > div > div > iframe {
+.google-button-container>div>div>iframe {
   margin: 0 auto !important;
   display: block !important;
   position: relative !important;
@@ -115,16 +177,80 @@ body { background-color: var(--page-bg); }
   right: 0 !important;
 }
 
-@media (max-width: 480px){ 
-  .login-card{ width: 100%; padding: 1.2rem; }
-  
+@media (max-width: 480px) {
+  .login-card {
+    width: 100%;
+    padding: 1.2rem;
+  }
+
   .google-button-container {
     min-height: 44px;
     margin: 0.4rem 0 0.8rem 0;
   }
-  
+
   .google-button-container iframe {
     border-radius: 8px !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  }
+}
+
+/* Restaurant registration additional styles */
+.restaurant-register-card {
+  width: 480px;
+}
+
+.info-text {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0 0 1.5rem 0;
+  line-height: 1.5;
+}
+
+.name-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.name-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.restaurant-btn {
+  background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+}
+
+.restaurant-btn:hover {
+  background: linear-gradient(180deg, #059669 0%, #047857 100%);
+}
+
+.switch-text {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 0.5rem 0;
+}
+
+.switch-text a {
+  color: var(--accent-dark);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.switch-text a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 520px) {
+  .restaurant-register-card {
+    width: 100%;
+  }
+
+  .name-row {
+    flex-direction: column;
+    gap: 0.75rem;
   }
 }
