@@ -66,7 +66,7 @@ export function RestaurantsProvider({ children }: { children: ReactNode }) {
                const primaryPhoto = r.photos.find((p: any) => p.isPrimary);
                imageUrl = primaryPhoto?.photoUrl || r.photos[0]?.photoUrl || imageUrl;
             }
-            
+
             return {
                id: r.id,
                name: r.name || '',
@@ -75,6 +75,8 @@ export function RestaurantsProvider({ children }: { children: ReactNode }) {
                rating: r.averageRating || r.rating || 0,
                priceLevel: r.priceLevel || 0,
                imageUrl: imageUrl,
+               latitude: r.latitude,
+               longitude: r.longitude,
             };
          });
          setRestaurants(mappedRestaurants);

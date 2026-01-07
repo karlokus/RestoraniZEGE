@@ -12,6 +12,8 @@ export type Restaurant = {
    rating: number;
    priceLevel: number;
    imageUrl: string;
+   latitude?: number;
+   longitude?: number;
 }
 
 interface RestaurantCardProps {

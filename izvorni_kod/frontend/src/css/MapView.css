@@ -1,0 +1,92 @@
+/* MapView Component Styles */
+
+/* Custom marker styles */
+.custom-marker {
+   background: transparent;
+   border: none;
+}
+
+.marker-pin {
+   width: 40px;
+   height: 40px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   background: white;
+   border: 3px solid #3d2514;
+   border-radius: 50% 50% 50% 0;
+   transform: rotate(-45deg);
+   transition: all 0.2s ease;
+   cursor: pointer;
+   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.marker-pin:hover,
+.marker-pin.marker-hovered {
+   background: #3d2514;
+   border-color: #ff6b35;
+   transform: rotate(-45deg) scale(1.2);
+   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.marker-icon {
+   transform: rotate(45deg);
+   font-size: 20px;
+   transition: all 0.2s ease;
+}
+
+.marker-pin:hover .marker-icon,
+.marker-pin.marker-hovered .marker-icon {
+   filter: brightness(0) invert(1);
+}
+
+/* Leaflet popup customization */
+.leaflet-popup-content-wrapper {
+   border-radius: 8px;
+   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.leaflet-popup-tip {
+   background: white;
+}
+
+/* Popup content styles */
+.map-popup-content {
+   min-width: 200px;
+}
+
+.map-popup-title {
+   margin: 0 0 8px 0;
+   font-size: 16px;
+   font-weight: 600;
+}
+
+.map-popup-info {
+   margin: 4px 0;
+   font-size: 14px;
+   color: #666;
+}
+
+.map-popup-rating {
+   margin: 4px 0;
+   font-size: 14px;
+   font-weight: 500;
+}
+
+.map-popup-button {
+   display: inline-block;
+   margin-top: 8px;
+   padding: 6px 12px;
+   background-color: #3d2514;
+   color: white;
+   border: none;
+   border-radius: 4px;
+   font-size: 14px;
+   cursor: pointer;
+   width: 100%;
+   transition: background-color 0.2s ease;
+}
+
+.map-popup-button:hover {
+   background-color: #2a1a0e;
+}

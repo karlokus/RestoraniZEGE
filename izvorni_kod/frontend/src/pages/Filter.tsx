@@ -4,10 +4,8 @@ import { useFavoritesContext } from "../contexts/FavoritesContext";
 import { useRestaurantsContext, type SortOption } from "../contexts/RestaurantsContext";
 import type { Restaurant } from "../components/RestaurantCard";
 import RestaurantDetail from "../components/RestaurantDetail";
+import MapView from "../components/MapView";
 import "../css/Filter.css";
-
-// Koordinate centra Zagreba
-const ZAGREB_CENTER = { lat: 45.815, lng: 15.9819 };
 
 // Emoji ikone za različite vrste kuhinja
 const cuisineIcons: Record<string, string> = {
@@ -57,20 +55,6 @@ function Filter() {
 
    const handleLogout = async () => {
       await logout();
-   };
-
-   // Generiraj pseudo-pozicije za restorane na karti (bazirano na ID-u za konzistentnost)
-   const getRestaurantPosition = (restaurant: Restaurant) => {
-      const seed = restaurant.id;
-      const latOffset = ((seed * 13) % 100 - 50) / 1000;
-      const lngOffset = ((seed * 17) % 100 - 50) / 1000;
-      return {
-         lat: ZAGREB_CENTER.lat + latOffset,
-         lng: ZAGREB_CENTER.lng + lngOffset,
-         // Pretvaranje u postotke za CSS pozicioniranje
-         top: 20 + ((seed * 13) % 60),
-         left: 10 + ((seed * 17) % 80)
-      };
    };
 
    const getCuisineIcon = (cuisine: string) => {
@@ -214,32 +198,12 @@ function Filter() {
          < div className="filter-main-content" >
             < div className="map-section" >
                <div className="map-container">
-                  <div className="map-placeholder">
-                     <div className="map-markers">
-                        {filteredRestaurants.map(restaurant => {
-                           const pos = getRestaurantPosition(restaurant);
-                           return (
-                              <div
-                                 key={restaurant.id}
-                                 className={`map-marker ${hoveredRestaurant === restaurant.id ? 'active' : ''}`}
-                                 style={{ top: `${pos.top}%`, left: `${pos.left}%` }}
-                                 onMouseEnter={() => setHoveredRestaurant(restaurant.id)}
-                                 onMouseLeave={() => setHoveredRestaurant(null)}
-                                 onClick={() => setSelectedRestaurant(restaurant)}
-                                 title={restaurant.name}
-                              >
-                                 <span className="marker-icon">{getCuisineIcon(restaurant.cuisine)}</span>
-                                 {hoveredRestaurant === restaurant.id && (
-                                    <div className="marker-tooltip">
-                                       <strong>{restaurant.name}</strong>
-                                       <span>⭐ {restaurant.rating}</span>
-                                    </div>
-                                 )}
-                              </div>
-                           );
-                        })}
-                     </div>
-                  </div>
+                  <MapView
+                     restaurants={filteredRestaurants}
+                     hoveredRestaurant={hoveredRestaurant}
+                     onMarkerClick={(restaurant) => setSelectedRestaurant(restaurant)}
+                     onMarkerHover={(restaurantId) => setHoveredRestaurant(restaurantId)}
+                  />
                   <div className="map-footer">
                      Pronađeno {filteredRestaurants.length} restorana
                   </div>
