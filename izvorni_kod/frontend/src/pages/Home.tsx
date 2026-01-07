@@ -4,7 +4,8 @@ import { useFavoritesContext } from "../contexts/FavoritesContext";
 import { useEventsContext } from "../contexts/EventsContext";
 import { useNotificationsContext } from "../contexts/NotificationsContext";
 import { useRestaurantsContext } from "../contexts/RestaurantsContext";
-import RestaurantCard, { type Restaurant } from "../components/RestaurantCard"
+import RestaurantCard, { type Restaurant } from "../components/RestaurantCard";
+import EventCard from "../components/EventCard";
 import "../css/Home.css"
 import chefImg from "../assets/chef.png";
 
@@ -247,25 +248,41 @@ function Home() {
                         <h2>
                            {activeFilter === 'all' && 'Svi restorani'}
                            {activeFilter === 'favorites' && 'Omiljeni restorani'}
-                           {activeFilter === 'events' && 'Događaji'}
+                           {activeFilter === 'events' && 'Nadolazeći događaji'}
                         </h2>
-                        <div className="restaurant-grid">
-                           {restaurants
-                              .filter((restaurant: Restaurant) => {
-                                 const matchesSearch = restaurant.name.toLowerCase().includes(filters.searchQuery.toLowerCase());
-                                 if (activeFilter === 'favorites') {
-                                    return matchesSearch && isFavorite(restaurant.id);
-                                 }
-                                 if (activeFilter === 'events') {
-                                    return matchesSearch && getUpcomingEvents().some(event => event.restaurantId === restaurant.id);
-                                 }
-                                 return matchesSearch;
-                              })
-                              .map((restaurant: Restaurant) => (
-                                 <RestaurantCard key={restaurant.id} restaurant={restaurant} />
-                              ))
-                           }
-                        </div>
+                        {activeFilter === 'events' ? (
+                           <div className="events-grid">
+                              {getUpcomingEvents().length === 0 ? (
+                                 <div style={{ padding: '2rem', textAlign: 'center', gridColumn: '1 / -1' }}>
+                                    <p style={{ fontSize: '18px', color: '#666' }}>Trenutno nema nadolazećih događaja.</p>
+                                 </div>
+                              ) : (
+                                 getUpcomingEvents()
+                                    .filter(event => 
+                                       event.title.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+                                       event.restaurantName?.toLowerCase().includes(filters.searchQuery.toLowerCase())
+                                    )
+                                    .map((event) => (
+                                       <EventCard key={event.id} event={event} />
+                                    ))
+                              )}
+                           </div>
+                        ) : (
+                           <div className="restaurant-grid">
+                              {restaurants
+                                 .filter((restaurant: Restaurant) => {
+                                    const matchesSearch = restaurant.name.toLowerCase().includes(filters.searchQuery.toLowerCase());
+                                    if (activeFilter === 'favorites') {
+                                       return matchesSearch && isFavorite(restaurant.id);
+                                    }
+                                    return matchesSearch;
+                                 })
+                                 .map((restaurant: Restaurant) => (
+                                    <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+                                 ))
+                              }
+                           </div>
+                        )}
                      </>
                   ) : (
                      <>

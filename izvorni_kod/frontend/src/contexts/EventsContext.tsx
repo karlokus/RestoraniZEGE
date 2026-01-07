@@ -36,19 +36,23 @@ export function EventsProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       setError(null);
       try {
-         const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.EVENTS}`, {
-            credentials: 'include',
-         });
+         const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.EVENTS}`);
 
          if (response.ok) {
             const data = await response.json();
-            setEvents(data);
+            // Mapiraj događaje i dodaj ime restorana
+            const mappedEvents = data.map((event: any) => ({
+               ...event,
+               restaurantName: event.restaurant?.name || 'Nepoznat restoran',
+            }));
+            setEvents(mappedEvents);
          } else {
             setError('Failed to load events');
+            setEvents([]); // Postavi praznu listu umjesto error-a
          }
       } catch (err) {
-         console.error('Failed to fetch events:', err);
-         setError('Failed to load events');
+         // Ne postavljaj error nego praznu listu da aplikacija može nastaviti raditi
+         setEvents([]);
       } finally {
          setLoading(false);
       }
@@ -56,9 +60,7 @@ export function EventsProvider({ children }: { children: ReactNode }) {
 
    const fetchEventsByRestaurant = async (restaurantId: number): Promise<Event[]> => {
       try {
-         const response = await fetch(`${API_BASE_URL}/events?restaurantId=${restaurantId}`, {
-            credentials: 'include',
-         });
+         const response = await fetch(`${API_BASE_URL}/events?restaurantId=${restaurantId}`);
 
          if (response.ok) {
             const data = await response.json();
@@ -66,7 +68,6 @@ export function EventsProvider({ children }: { children: ReactNode }) {
          }
          return [];
       } catch (err) {
-         console.error('Failed to fetch restaurant events:', err);
          return [];
       }
    };
