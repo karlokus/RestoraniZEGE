@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "../contexts/AuthContext";
-import { api, CuisineType, type CreateRestaurantData } from "../services/api";
+import { api, CuisineType, PriceRange, type CreateRestaurantData } from "../services/api";
 import "../css/CreateRestaurant.css";
 
 const cuisineTypeLabels: Record<CuisineType, string> = {
@@ -23,14 +23,22 @@ const cuisineTypeLabels: Record<CuisineType, string> = {
   [CuisineType.CROATIAN]: "Hrvatska",
 };
 
+const priceRangeLabels: Record<PriceRange, string> = {
+  [PriceRange.LOW]: "€ - Niski",
+  [PriceRange.MEDIUM]: "€€ - Srednji",
+  [PriceRange.HIGH]: "€€€ - Visoki",
+  [PriceRange.PREMIUM]: "€€€€ - Premium (Michelin)",
+};
+
 function CreateRestaurant() {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuthContext();
-  
+
   const [formData, setFormData] = useState<CreateRestaurantData>({
     name: "",
     description: "",
     cuisineType: undefined,
+    priceRange: undefined,
     adress: "",
     city: "",
     phone: "",
@@ -47,7 +55,7 @@ function CreateRestaurant() {
     saturday: "",
     sunday: "",
   });
-  
+
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -87,9 +95,9 @@ function CreateRestaurant() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    
+
     if (!validate()) return;
-    
+
     setLoading(true);
 
     try {
@@ -97,15 +105,16 @@ function CreateRestaurant() {
       const cleanData: CreateRestaurantData = {
         name: formData.name.trim(),
       };
-      
+
       if (formData.description?.trim()) cleanData.description = formData.description.trim();
       if (formData.cuisineType) cleanData.cuisineType = formData.cuisineType;
+      if (formData.priceRange) cleanData.priceRange = formData.priceRange;
       if (formData.adress?.trim()) cleanData.adress = formData.adress.trim();
       if (formData.city?.trim()) cleanData.city = formData.city.trim();
       if (formData.phone?.trim()) cleanData.phone = formData.phone.trim();
       if (formData.email?.trim()) cleanData.email = formData.email.trim();
       if (formData.website?.trim()) cleanData.website = formData.website.trim();
-      
+
       // Konvertiraj workingHours objekt u JSON string
       const hasWorkingHours = Object.values(workingHours).some(v => v.trim());
       if (hasWorkingHours) {
@@ -132,10 +141,9 @@ function CreateRestaurant() {
         </div>
 
         <form className="create-restaurant-form" onSubmit={handleSubmit}>
-          {/* Basic Info Section */}
           <section className="form-section">
             <h2>Osnovni podaci</h2>
-            
+
             <div className="form-group">
               <label htmlFor="name">Naziv restorana *</label>
               <input
@@ -180,12 +188,35 @@ function CreateRestaurant() {
                 ))}
               </select>
             </div>
+
+            <div className="form-group">
+              <label htmlFor="priceRange">Cijenovni razred</label>
+              <select
+                id="priceRange"
+                name="priceRange"
+                value={formData.priceRange || ""}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setFormData(prev => ({
+                    ...prev,
+                    priceRange: value ? Number(value) as PriceRange : undefined,
+                  }));
+                }}
+                disabled={loading}
+              >
+                <option value="">Odaberite cijenovni razred</option>
+                {Object.entries(priceRangeLabels).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </section>
 
-          {/* Location Section */}
           <section className="form-section">
             <h2>Lokacija</h2>
-            
+
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="adress">Adresa</label>
@@ -215,10 +246,9 @@ function CreateRestaurant() {
             </div>
           </section>
 
-          {/* Contact Section */}
           <section className="form-section">
             <h2>Kontakt</h2>
-            
+
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="phone">Telefon</label>
@@ -261,11 +291,10 @@ function CreateRestaurant() {
             </div>
           </section>
 
-          {/* Working Hours Section */}
           <section className="form-section">
             <h2>Radno vrijeme</h2>
             <p className="section-hint">Unesite radno vrijeme za svaki dan (npr. 10:00-22:00 ili Zatvoreno)</p>
-            
+
             <div className="working-hours-grid">
               <div className="form-group">
                 <label htmlFor="monday">Ponedjeljak</label>
@@ -356,16 +385,16 @@ function CreateRestaurant() {
           {error && <div className="form-error">{error}</div>}
 
           <div className="form-actions">
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="btn-secondary"
               onClick={() => navigate("/dashboard")}
               disabled={loading}
             >
               Odustani
             </button>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="btn-primary"
               disabled={loading}
             >

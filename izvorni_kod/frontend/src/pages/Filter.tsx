@@ -155,43 +155,53 @@ function Filter() {
                </select>
             </div>
 
-            <div className="filter-group">
+            <div className="filter-group price-filter-group">
                <label className="filter-label">
-                  <span className="filter-icon">🔥</span>
-                  Raspon cijena
+                  <span className="filter-icon">💰</span>
+                  Cijenovni razred
                </label>
                <div className="price-buttons">
                   <button
                      className={`price-btn ${filters.priceFilter === null ? 'active' : ''}`}
                      onClick={() => setPriceFilter(null)}
+                     title="Svi cijenovni razredi"
                   >
-                     Sve
+                     Svi
                   </button>
                   <button
                      className={`price-btn ${filters.priceFilter === 1 ? 'active' : ''}`}
                      onClick={() => setPriceFilter(1)}
+                     title="Niski - Jeftino"
                   >
                      €
                   </button>
                   <button
                      className={`price-btn ${filters.priceFilter === 2 ? 'active' : ''}`}
                      onClick={() => setPriceFilter(2)}
+                     title="Srednji - Pristupačno"
                   >
                      €€
                   </button>
                   <button
                      className={`price-btn ${filters.priceFilter === 3 ? 'active' : ''}`}
                      onClick={() => setPriceFilter(3)}
+                     title="Visoki - Skuplje"
                   >
                      €€€
                   </button>
                   <button
                      className={`price-btn ${filters.priceFilter === 4 ? 'active' : ''}`}
                      onClick={() => setPriceFilter(4)}
+                     title="Premium - Michelin"
                   >
                      €€€€
                   </button>
                </div>
+               {filters.priceFilter !== null && (
+                  <div className="filter-hint">
+                     Prikazuju se restorani do {getPriceLevelDisplay(filters.priceFilter)} razreda
+                  </div>
+               )}
             </div>
          </div >
 

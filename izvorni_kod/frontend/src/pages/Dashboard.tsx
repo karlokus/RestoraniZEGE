@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuthContext } from "../contexts/AuthContext";
 import { api, type Restaurant } from "../services/api";
 import "../css/Dashboard.css";
-import { useRestaurantsContext } from "../contexts/RestaurantsContext";
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -17,7 +16,7 @@ function Dashboard() {
       navigate("/login");
       return;
     }
-    
+
     if (user?.role !== "restaurant") {
       navigate("/");
       return;
@@ -130,12 +129,12 @@ function Dashboard() {
                       {restaurant.verified ? '✓ Verificiran' : '⏳ Na čekanju'}
                     </span>
                   </div>
-                  
+
                   <div className="restaurant-card-body">
                     {restaurant.description && (
                       <p className="restaurant-description">{restaurant.description}</p>
                     )}
-                    
+
                     <div className="restaurant-info">
                       {restaurant.cuisineType && (
                         <div className="info-item">
@@ -170,25 +169,25 @@ function Dashboard() {
                   </div>
 
                   <div className="restaurant-card-actions">
-                    <Link 
-                      to={`/dashboard/edit-restaurant/${restaurant.id}`} 
+                    <Link
+                      to={`/dashboard/edit-restaurant/${restaurant.id}`}
                       className="btn-edit"
                     >
                       Uredi
                     </Link>
-                    <Link 
-                      to={`/dashboard/manage-photos/${restaurant.id}`} 
+                    <Link
+                      to={`/dashboard/manage-photos/${restaurant.id}`}
                       className="btn-photos"
                     >
                       Slike
                     </Link>
-                    <Link 
-                      to={`/dashboard/manage-events/${restaurant.id}`} 
+                    <Link
+                      to={`/dashboard/manage-events/${restaurant.id}`}
                       className="btn-events"
                     >
                       Događaji
                     </Link>
-                    <button 
+                    <button
                       className="btn-delete"
                       onClick={() => handleDeleteRestaurant(restaurant.id, restaurant.name)}
                     >

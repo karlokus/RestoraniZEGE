@@ -73,7 +73,7 @@ export function RestaurantsProvider({ children }: { children: ReactNode }) {
                cuisine: r.cuisineType || r.cuisine || '',
                location: r.adress ? `${r.adress}${r.city ? ', ' + r.city : ''}` : (r.city || r.location || ''),
                rating: r.averageRating || r.rating || 0,
-               priceLevel: r.priceLevel || 0,
+               priceLevel: r.priceRange || r.priceLevel || 2,
                imageUrl: imageUrl,
                latitude: r.latitude,
                longitude: r.longitude,

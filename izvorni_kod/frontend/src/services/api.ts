@@ -40,6 +40,7 @@ export interface Restaurant {
    name: string;
    description?: string;
    cuisineType?: string;
+   priceRange?: number;
    adress?: string;
    city?: string;
    latitude?: number;
@@ -166,31 +167,42 @@ export interface UploadPhotoData {
    file: File;
 }
 
+// Price range enum matching backend
+export const PriceRange = {
+   LOW: 1,        // € - Niski
+   MEDIUM: 2,     // €€ - Srednji
+   HIGH: 3,       // €€€ - Visoki
+   PREMIUM: 4,    // €€€€ - Premium/Michelin
+} as const;
+export type PriceRange = typeof PriceRange[keyof typeof PriceRange];
+
 // Cuisine types enum matching backend
-export enum CuisineType {
-   ITALIAN = 'talijanska',
-   CHINESE = 'kineska',
-   MEXICAN = 'meksička',
-   INDIAN = 'indijska',
-   JAPANESE = 'japanska',
-   THAI = 'tajlandska',
-   MEDITERRANEAN = 'mediteranska',
-   FAST_FOOD = 'brza-hrana',
-   VEGETARIAN = 'vegetarijanska',
-   SEAFOOD = 'morski-plodovi',
-   STEAKHOUSE = 'steakhouse',
-   BISTRO = 'bistro',
-   CAFE = 'kafić',
-   PIZZA = 'pizzeria',
-   BAKERY = 'pekara',
-   CROATIAN = 'hrvatska',
-}
+export const CuisineType = {
+   ITALIAN: 'talijanska',
+   CHINESE: 'kineska',
+   MEXICAN: 'meksička',
+   INDIAN: 'indijska',
+   JAPANESE: 'japanska',
+   THAI: 'tajlandska',
+   MEDITERRANEAN: 'mediteranska',
+   FAST_FOOD: 'brza-hrana',
+   VEGETARIAN: 'vegetarijanska',
+   SEAFOOD: 'morski-plodovi',
+   STEAKHOUSE: 'steakhouse',
+   BISTRO: 'bistro',
+   CAFE: 'kafić',
+   PIZZA: 'pizzeria',
+   BAKERY: 'pekara',
+   CROATIAN: 'hrvatska',
+} as const;
+export type CuisineType = typeof CuisineType[keyof typeof CuisineType];
 
 // Create restaurant interface
 export interface CreateRestaurantData {
    name: string;
    description?: string;
    cuisineType?: CuisineType;
+   priceRange?: PriceRange;
    adress?: string;
    city?: string;
    latitude?: number;
@@ -206,6 +218,7 @@ export interface UpdateRestaurantData {
    name?: string;
    description?: string;
    cuisineType?: CuisineType;
+   priceRange?: PriceRange;
    adress?: string;
    city?: string;
    latitude?: number;
@@ -428,7 +441,7 @@ export const api = {
    // Search restaurants with filters
    async searchRestaurants(params: SearchRestaurantsParams = {}): Promise<SearchRestaurantsResponse> {
       const queryParams = new URLSearchParams();
-      
+
       if (params.search) queryParams.append('search', params.search);
       if (params.cuisineType) queryParams.append('cuisineType', params.cuisineType);
       if (params.city) queryParams.append('city', params.city);

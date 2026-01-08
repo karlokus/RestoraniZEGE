@@ -41,6 +41,10 @@ function RestaurantCard({ restaurant, onClick }: RestaurantCardProps) {
       }
    }
 
+   const getPriceLevelDisplay = (level: number) => {
+      return "€".repeat(Math.min(Math.max(level, 1), 4));
+   };
+
    return <>
       <div className="restaurant-card" onClick={handleCardClick}>
          <div className="restaurant-poster">
@@ -65,8 +69,8 @@ function RestaurantCard({ restaurant, onClick }: RestaurantCardProps) {
             <p className="restaurant-location">📍{restaurant.location}</p>
          </div>
          <div className="rate-price">
-            <span className="restaurant-rating"> {restaurant.rating}</span>
-            <span className="restaurant-price">	€ {restaurant.priceLevel}</span>
+            <span className="restaurant-rating"> {Number(restaurant.rating || 0).toFixed(1)}</span>
+            <span className="restaurant-price">{getPriceLevelDisplay(restaurant.priceLevel)}</span>
          </div>
       </div>
 

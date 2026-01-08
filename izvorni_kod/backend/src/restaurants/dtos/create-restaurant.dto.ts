@@ -1,5 +1,6 @@
 import { IsBoolean, IsEmail, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
 import { CuisineType } from '../enums/cuisine-type.enum';
+import { PriceRange } from '../enums/price-range.enum';
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -30,6 +31,15 @@ export class CreateRestaurantDto {
     @IsEnum(CuisineType)
     @IsOptional()
     cuisineType?: CuisineType;
+
+    @ApiPropertyOptional({
+        enum: PriceRange,
+        example: PriceRange.MEDIUM,
+        description: 'Cijenovni razred restorana (1=€, 2=€€, 3=€€€, 4=€€€€)',
+    })
+    @IsEnum(PriceRange)
+    @IsOptional()
+    priceRange?: PriceRange;
 
     @ApiPropertyOptional({
         example: 'Ilica 10',
