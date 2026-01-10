@@ -2,6 +2,7 @@ import { User } from "src/users/entities/user.entity";
 import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Favorite } from "src/favorites/entities/favorite.entity";
 import { CuisineType } from "../enums/cuisine-type.enum";
+import { PriceRange } from "../enums/price-range.enum";
 
 import { Event } from "../../events/entities/event.entity";
 import { Rating } from "../../ratings/entities/rating.entity";
@@ -37,6 +38,14 @@ export class Restaurant {
         default: CuisineType.BISTRO,
     })
     cuisineType: CuisineType;
+
+    @Column({
+        type: 'enum',
+        enum: PriceRange,
+        nullable: true,
+        default: PriceRange.MEDIUM,
+    })
+    priceRange: PriceRange;
 
     @Column({
         type: 'varchar',
@@ -94,11 +103,11 @@ export class Restaurant {
 
     @Column({
         type: 'varchar',
-        length: 96,
+        length: 500,
         nullable: true,
         unique: false,
     })
-    workingHours: string;   // todo -> napraviti poseban data WorkingHours
+    workingHours: string;   // JSON string sa radnim vremenom za svaki dan
 
     @Column({
         type: 'boolean',
@@ -117,16 +126,16 @@ export class Restaurant {
     })
     updatedAt: Date;
 
-    @Column({ 
-        type: 'decimal', 
-        precision: 3, 
-        scale: 2, 
-        default: 0 
+    @Column({
+        type: 'decimal',
+        precision: 3,
+        scale: 2,
+        default: 0
     })
     averageRating: number;
 
-    @Column({ 
-        default: 0 
+    @Column({
+        default: 0
     })
     totalRatings: number;
 

@@ -24,13 +24,15 @@ export class RestaurantsService {
     ) {}
 
     public async getAllRestaurants() {
-        return await this.restaurantsRepository.find();
+        return await this.restaurantsRepository.find({
+            relations: ['user', 'photos'],
+        });
     }
 
     public async getAllVerifiedRestaurants() {
         return await this.restaurantsRepository.find({
             where: { verified: true },
-            //relations: ['user'],
+            relations: ['user', 'photos'],
         });
     }
 

@@ -1,5 +1,6 @@
 import { IsBoolean, IsEmail, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
 import { CuisineType } from '../enums/cuisine-type.enum';
+import { PriceRange } from '../enums/price-range.enum';
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -30,6 +31,15 @@ export class CreateRestaurantDto {
     @IsEnum(CuisineType)
     @IsOptional()
     cuisineType?: CuisineType;
+
+    @ApiPropertyOptional({
+        enum: PriceRange,
+        example: PriceRange.MEDIUM,
+        description: 'Cijenovni razred restorana (1=€, 2=€€, 3=€€€, 4=€€€€)',
+    })
+    @IsEnum(PriceRange)
+    @IsOptional()
+    priceRange?: PriceRange;
 
     @ApiPropertyOptional({
         example: 'Ilica 10',
@@ -98,13 +108,13 @@ export class CreateRestaurantDto {
     website?: string;
 
     @ApiPropertyOptional({
-        example: 'Pon-Ned 10:00-23:00',
-        maxLength: 96,
-        description: 'Radno vrijeme',
+        example: '{"monday":"10:00-22:00","tuesday":"10:00-22:00","wednesday":"10:00-22:00","thursday":"10:00-22:00","friday":"10:00-22:00","saturday":"10:00-23:00","sunday":"Zatvoreno"}',
+        maxLength: 500,
+        description: 'Radno vrijeme (JSON format sa danima tjedna)',
     })
     @IsString()
     @IsOptional()
-    @MaxLength(96)
+    @MaxLength(500)
     workingHours?: string;
 
     @ApiPropertyOptional({
