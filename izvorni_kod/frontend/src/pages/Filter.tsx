@@ -158,13 +158,13 @@ function Filter() {
             <div className="filter-group price-filter-group">
                <label className="filter-label">
                   <span className="filter-icon">💰</span>
-                  Cijenovni razred
+                  Cjenovni razred
                </label>
                <div className="price-buttons">
                   <button
                      className={`price-btn ${filters.priceFilter === null ? 'active' : ''}`}
                      onClick={() => setPriceFilter(null)}
-                     title="Svi cijenovni razredi"
+                     title="Svi cjenovni razredi"
                   >
                      Svi
                   </button>

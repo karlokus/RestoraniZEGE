@@ -797,15 +797,41 @@
    .map-section {
       border-right: none;
       border-bottom: 1px solid #e0e0e0;
-      max-height: 350px;
+      min-height: 400px;
+      max-height: 450px;
+      order: -1;
+   }
+
+   .list-section {
+      order: 1;
+   }
+
+   .map-container {
+      height: 100%;
+      min-height: 380px;
    }
 
    .map-placeholder {
-      min-height: 300px;
+      min-height: 350px;
    }
 
    .restaurant-list {
       max-height: none;
+   }
+}
+
+@media (max-width: 900px) {
+   .map-section {
+      min-height: 380px;
+      max-height: 420px;
+   }
+
+   .map-container {
+      min-height: 360px;
+   }
+
+   .map-placeholder {
+      min-height: 330px;
    }
 }
 
@@ -829,6 +855,22 @@
 
    .map-section {
       padding: 1rem;
+      order: -1;
+      min-height: 350px;
+      max-height: 400px;
+   }
+
+   .list-section {
+      order: 1;
+   }
+
+   .map-container {
+      min-height: 330px;
+      height: 100%;
+   }
+
+   .map-placeholder {
+      min-height: 300px;
    }
 
    .list-header {
@@ -863,6 +905,22 @@
    }
 }
 
+@media (max-width: 600px) {
+   .map-section {
+      padding: 0.875rem;
+      min-height: 320px;
+      max-height: 380px;
+   }
+
+   .map-container {
+      min-height: 300px;
+   }
+
+   .map-placeholder {
+      min-height: 280px;
+   }
+}
+
 @media (max-width: 480px) {
    .filter-header .header-title {
       font-size: 1.5rem;
@@ -878,18 +936,75 @@
       text-align: center;
    }
 
+   .map-section {
+      padding: 0.75rem;
+      min-height: 300px;
+      max-height: 350px;
+   }
+
+   .map-container {
+      min-height: 280px;
+      height: 100%;
+   }
+
+   .map-placeholder {
+      min-height: 260px;
+   }
+
    .restaurant-card-item {
-      flex-direction: column;
-      align-items: stretch;
+      flex-direction: row;
+      align-items: flex-start;
+      padding: 1rem;
    }
 
    .card-icon-wrapper {
-      width: 100%;
-      height: 80px;
+      width: 60px;
+      height: 60px;
       border-radius: 12px;
+      flex-shrink: 0;
    }
 
    .card-cuisine-icon {
-      font-size: 2rem;
+      font-size: 1.75rem;
+   }
+
+   .card-name {
+      font-size: 0.95rem;
+   }
+
+   .card-cuisine {
+      font-size: 0.8rem;
+   }
+
+   .card-location {
+      font-size: 0.78rem;
+   }
+
+   .card-rating {
+      font-size: 0.9rem;
+   }
+
+   .card-price {
+      font-size: 0.85rem;
+   }
+}
+
+@media (max-width: 375px) {
+   .map-section {
+      padding: 0.5rem;
+      min-height: 280px;
+      max-height: 320px;
+   }
+
+   .map-container {
+      min-height: 260px;
+   }
+
+   .map-placeholder {
+      min-height: 240px;
+   }
+
+   .filter-header .header-title {
+      font-size: 1.3rem;
    }
 }
