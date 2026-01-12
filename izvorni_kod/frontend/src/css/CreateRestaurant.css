@@ -1,16 +1,16 @@
 /* Create Restaurant Page Styles */
 
-:root {
-   --page-bg: #fbf7f2;
-   --muted: #a89b8e;
-   --accent-dark: #5a3b2a;
-   --accent-light: #caa67f;
-}
-
 .create-restaurant-page {
    min-height: 100vh;
    background: linear-gradient(135deg, #fbf7f2 0%, #f5ede5 100%);
    padding: 2.5rem 1.5rem;
+}
+
+/* Local color variables */
+.create-restaurant-page {
+   --accent-dark: #5a3b2a;
+   --accent-light: #caa67f;
+   --muted: #a89b8e;
 }
 
 .create-restaurant-container {
