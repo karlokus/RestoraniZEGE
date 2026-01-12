@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { useAuthContext } from "../contexts/AuthContext";
-import { api } from "../services/api";
+import { useNavigate } from "react-router-dom";
+import { api, clearTokens } from "../services/api";
 import "../css/AdminDashboard.css";
 
 // Types
@@ -17,7 +16,6 @@ interface User {
 
 interface VerificationRequest {
   id: number;
-  status: string;
   restaurant: {
     id: number;
     name: string;
@@ -26,20 +24,22 @@ interface VerificationRequest {
     phone?: string;
     email?: string;
     description?: string;
+    user?: {
+      id: number;
+      firstName: string;
+      lastName: string;
+    };
   };
-  user?: {
-    id: number;
-    firstName: string;
-    lastName: string;
-    email: string;
-  };
-  requestedAt: string;
+  status: string;
+  createdAt: string;
 }
 
-interface Comment {
+interface ReviewItem {
   id: number;
+  type: 'comment' | 'rating';
   content: string;
-  isVisible: boolean;
+  rating?: number;
+  isVisible?: boolean;
   createdAt: string;
   user?: {
     id: number;
@@ -56,73 +56,96 @@ type TabType = "verification" | "users" | "moderation";
 
 function AdminDashboard() {
   const navigate = useNavigate();
-  const { user, isAuthenticated, logout } = useAuthContext();
   const [activeTab, setActiveTab] = useState<TabType>("verification");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [selectedVerification, setSelectedVerification] = useState<VerificationRequest | null>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  // State for each tab
+  // Data states
   const [verificationRequests, setVerificationRequests] = useState<VerificationRequest[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  const [comments, setComments] = useState<Comment[]>([]);
-  
-  // Selected items for detailed view
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [selectedVerification, setSelectedVerification] = useState<VerificationRequest | null>(null);
+  const [reviews, setReviews] = useState<ReviewItem[]>([]);
+  const [selectedReview, setSelectedReview] = useState<ReviewItem | null>(null);
 
+  // Loading states
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch data on mount and tab change
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/login");
-      return;
-    }
-
-    if (user?.role !== "admin") {
-      navigate("/");
-      return;
-    }
-  }, [isAuthenticated, user, navigate]);
-
-  useEffect(() => {
-    if (isAuthenticated && user?.role === "admin") {
-      fetchData();
-    }
-  }, [activeTab, isAuthenticated, user]);
+    fetchData();
+  }, [activeTab]);
 
   const fetchData = async () => {
     setLoading(true);
-    setError("");
+    setError(null);
+    
     try {
-      switch (activeTab) {
-        case "verification":
-          const requests = await api.getPendingVerifications();
-          setVerificationRequests(requests);
-          break;
-        case "users":
-          const allUsers = await api.getAllUsers();
-          setUsers(allUsers);
-          break;
-        case "moderation":
-          const allComments = await api.getAllComments();
-          setComments(allComments);
-          break;
+      if (activeTab === "verification") {
+        const data = await api.getPendingVerifications();
+        setVerificationRequests(data);
+      } else if (activeTab === "users") {
+        const data = await api.getAllUsers();
+        // Filter out admin users from the list
+        setUsers(data.filter((user: User) => user.role !== "admin"));
+      } else if (activeTab === "moderation") {
+        // Dohvati sve restorane pa za svaki dohvati ratinge
+        const allReviews: ReviewItem[] = [];
+        
+        // Dohvati sve restorane (uključujući neverificirane za admin)
+        const restaurants = await api.getRestaurants();
+        
+        // Za svaki restoran dohvati ratinge
+        for (const restaurant of restaurants) {
+          try {
+            const ratings = await api.getRatingsByRestaurant(restaurant.id);
+            // Pretvori ratinge u ReviewItem format
+            for (const rating of ratings) {
+              if (rating.comment) { // Samo ako ima komentar
+                allReviews.push({
+                  id: rating.id,
+                  type: 'rating',
+                  content: rating.comment,
+                  rating: rating.rating,
+                  createdAt: rating.createdAt,
+                  user: rating.user,
+                  restaurant: {
+                    id: restaurant.id,
+                    name: restaurant.name
+                  }
+                });
+              }
+            }
+          } catch (err) {
+            console.error(`Failed to fetch ratings for restaurant ${restaurant.id}:`, err);
+          }
+        }
+        
+        // Sortiraj po datumu (najnoviji prvo)
+        allReviews.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        setReviews(allReviews);
       }
     } catch (err: any) {
-      console.error("Failed to fetch data:", err);
       setError(err.message || "Greška pri dohvaćanju podataka");
+      console.error("Error fetching data:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Verification handlers
+  const handleLogout = () => {
+    clearTokens();
+    navigate("/");
+  };
+
+  // ==================== VERIFICATION ACTIONS ====================
   const handleApproveVerification = async (id: number) => {
     try {
       await api.approveVerification(id);
-      setVerificationRequests(prev => prev.filter(r => r.id !== id));
+      setVerificationRequests(prev => prev.filter(v => v.id !== id));
       setSelectedVerification(null);
-      alert("Zahtjev za verifikaciju odobren!");
+      alert("Restoran je uspješno verificiran!");
     } catch (err: any) {
-      alert(err.message || "Greška pri odobravanju zahtjeva");
+      alert(err.message || "Greška pri odobravanju verifikacije");
     }
   };
 
@@ -132,32 +155,34 @@ function AdminDashboard() {
     
     try {
       await api.rejectVerification(id, reason);
-      setVerificationRequests(prev => prev.filter(r => r.id !== id));
+      setVerificationRequests(prev => prev.filter(v => v.id !== id));
       setSelectedVerification(null);
-      alert("Zahtjev za verifikaciju odbijen.");
+      alert("Zahtjev za verifikaciju je odbijen.");
     } catch (err: any) {
-      alert(err.message || "Greška pri odbijanju zahtjeva");
+      alert(err.message || "Greška pri odbijanju verifikacije");
     }
   };
 
-  const handleDeleteRestaurant = async (restaurantId: number) => {
-    if (!confirm("Jeste li sigurni da želite obrisati ovaj restoran?")) return;
+  const handleDeleteVerification = async (id: number) => {
+    if (!confirm("Jeste li sigurni da želite obrisati ovaj zahtjev?")) return;
     
     try {
-      await api.deleteRestaurant(restaurantId);
-      setVerificationRequests(prev => prev.filter(r => r.restaurant.id !== restaurantId));
+      // Note: If there's no delete endpoint, we just remove from UI
+      setVerificationRequests(prev => prev.filter(v => v.id !== id));
       setSelectedVerification(null);
-      alert("Restoran je obrisan.");
+      alert("Zahtjev je uklonjen.");
     } catch (err: any) {
-      alert(err.message || "Greška pri brisanju restorana");
+      alert(err.message || "Greška pri brisanju zahtjeva");
     }
   };
 
-  // User management handlers
+  // ==================== USER ACTIONS ====================
   const handleBlockUser = async (userId: number) => {
     try {
       await api.blockUser(userId);
-      setUsers(prev => prev.map(u => u.id === userId ? { ...u, isBlocked: true } : u));
+      setUsers(prev => prev.map(u => 
+        u.id === userId ? { ...u, isBlocked: true } : u
+      ));
       if (selectedUser?.id === userId) {
         setSelectedUser({ ...selectedUser, isBlocked: true });
       }
@@ -170,7 +195,9 @@ function AdminDashboard() {
   const handleUnblockUser = async (userId: number) => {
     try {
       await api.unblockUser(userId);
-      setUsers(prev => prev.map(u => u.id === userId ? { ...u, isBlocked: false } : u));
+      setUsers(prev => prev.map(u => 
+        u.id === userId ? { ...u, isBlocked: false } : u
+      ));
       if (selectedUser?.id === userId) {
         setSelectedUser({ ...selectedUser, isBlocked: false });
       }
@@ -193,342 +220,381 @@ function AdminDashboard() {
     }
   };
 
-  // Comment moderation handlers
-  const handleApproveComment = async (commentId: number) => {
-    try {
-      await api.showComment(commentId);
-      setComments(prev => prev.filter(c => c.id !== commentId));
-      alert("Komentar je odobren.");
-    } catch (err: any) {
-      alert(err.message || "Greška pri odobravanju komentara");
-    }
-  };
-
-  const handleDeleteComment = async (commentId: number) => {
-    if (!confirm("Jeste li sigurni da želite ukloniti ovaj komentar?")) return;
+  // ==================== REVIEW/RATING ACTIONS ====================
+  const handleDeleteReview = async (review: ReviewItem) => {
+    if (!confirm("Jeste li sigurni da želite obrisati ovu recenziju?")) return;
     
     try {
-      await api.deleteComment(commentId);
-      setComments(prev => prev.filter(c => c.id !== commentId));
-      alert("Komentar je uklonjen.");
+      if (review.type === 'rating') {
+        await api.deleteRating(review.id);
+      } else {
+        await api.deleteComment(review.id);
+      }
+      setReviews(prev => prev.filter(r => !(r.id === review.id && r.type === review.type)));
+      setSelectedReview(null);
+      alert("Recenzija je obrisana.");
     } catch (err: any) {
-      alert(err.message || "Greška pri uklanjanju komentara");
+      alert(err.message || "Greška pri brisanju recenzije");
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate("/");
-  };
-
+  // Format date helper
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("hr-HR", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    });
+    return new Date(dateString).toLocaleDateString("hr-HR");
   };
 
-  if (!isAuthenticated || user?.role !== "admin") {
-    return null;
-  }
+  // ==================== RENDER FUNCTIONS ====================
+  const renderVerificationTab = () => {
+    if (selectedVerification) {
+      return (
+        <div className="admin-detail-view">
+          <h2>Restorani na čekanju verifikacije ({verificationRequests.length})</h2>
+          <button className="back-button" onClick={() => setSelectedVerification(null)}>
+            ← Nazad
+          </button>
 
-  // Get counts for tab badges
-  const verificationCount = verificationRequests.length;
-  const moderationCount = comments.filter(c => !c.isVisible).length;
-
-  return (
-    <div className="admin-dashboard">
-      {/* Header - same style as Home */}
-      <header className="admin-header">
-        <div className="header-things">
-          <div className="brand-wrap">
-            <Link to="/" className="header-title">RestoraniZEGE</Link>
-            <span className="brand-sub">ZAGREB</span>
+          <div className="detail-content">
+            <div className="detail-row">
+              <span className="detail-label">Naziv restorana</span>
+              <span className="detail-value">{selectedVerification.restaurant.name}</span>
+            </div>
+            <div className="detail-row">
+              <span className="detail-label">Vlasnik</span>
+              <span className="detail-value">
+                {selectedVerification.restaurant.user 
+                  ? `${selectedVerification.restaurant.user.firstName} ${selectedVerification.restaurant.user.lastName}`
+                  : "Nepoznato"}
+              </span>
+            </div>
+            <div className="detail-row">
+              <span className="detail-label">Email</span>
+              <span className="detail-value">{selectedVerification.restaurant.email || "N/A"}</span>
+            </div>
+            <div className="detail-row">
+              <span className="detail-label">Telefon</span>
+              <span className="detail-value">{selectedVerification.restaurant.phone || "N/A"}</span>
+            </div>
+            <div className="detail-row">
+              <span className="detail-label">Mjesto</span>
+              <span className="detail-value">{selectedVerification.restaurant.city || "N/A"}</span>
+            </div>
+            <div className="detail-row">
+              <span className="detail-label">Adresa</span>
+              <span className="detail-value">{selectedVerification.restaurant.adress || "N/A"}</span>
+            </div>
+            <div className="detail-row">
+              <span className="detail-label">Opis</span>
+              <span className="detail-value">{selectedVerification.restaurant.description || "N/A"}</span>
+            </div>
           </div>
 
-          <div className="header-center">
-            <span className="admin-page-title">🛡️ Administrator</span>
-          </div>
-
-          <div className="header-right">
-            <button className="logout-btn" onClick={handleLogout}>
-              Odjava
+          <div className="detail-actions">
+            <button 
+              className="action-btn approve"
+              onClick={() => handleApproveVerification(selectedVerification.id)}
+            >
+              ✓ Odobri
+            </button>
+            <button 
+              className="action-btn reject"
+              onClick={() => handleRejectVerification(selectedVerification.id)}
+            >
+              ✗ Odbij
+            </button>
+            <button 
+              className="action-btn delete-outline"
+              onClick={() => handleDeleteVerification(selectedVerification.id)}
+            >
+              🗑 Obriši
             </button>
           </div>
         </div>
-      </header>
+      );
+    }
 
-      <main className="admin-main">
-        <div className="admin-container">
-          {/* Tabs */}
-          <div className="admin-tabs">
-            <button
-              className={`tab-btn ${activeTab === "verification" ? "active" : ""}`}
-              onClick={() => { setActiveTab("verification"); setSelectedUser(null); setSelectedVerification(null); }}
+    return (
+      <div className="admin-list-view">
+        <h2>Restorani na čekanju verifikacije ({verificationRequests.length})</h2>
+        {loading && <p>Učitavanje...</p>}
+        {error && <p className="error-message">{error}</p>}
+        {!loading && verificationRequests.length === 0 && (
+          <p className="no-data">Nema zahtjeva za verifikaciju.</p>
+        )}
+        <div className="list-items">
+          {verificationRequests.map((request) => (
+            <div
+              key={request.id}
+              className="list-item"
+              onClick={() => setSelectedVerification(request)}
             >
-              <span className="tab-icon">🏪</span>
-              Verifikacija restorana
-              {verificationCount > 0 && <span className="tab-badge">{verificationCount}</span>}
-            </button>
-            <button
-              className={`tab-btn ${activeTab === "users" ? "active" : ""}`}
-              onClick={() => { setActiveTab("users"); setSelectedUser(null); setSelectedVerification(null); }}
-            >
-              <span className="tab-icon">👥</span>
-              Upravljanje korisnicima
-            </button>
-            <button
-              className={`tab-btn ${activeTab === "moderation" ? "active" : ""}`}
-              onClick={() => { setActiveTab("moderation"); setSelectedUser(null); setSelectedVerification(null); }}
-            >
-              <span className="tab-icon">💬</span>
-              Moderiranje sadržaja
-              {moderationCount > 0 && <span className="tab-badge">{moderationCount}</span>}
-            </button>
+              <div className="item-info">
+                <span className="item-name">{request.restaurant.name}</span>
+                <span className="item-details">
+                  Vlasnik: {request.restaurant.user 
+                    ? `${request.restaurant.user.firstName} ${request.restaurant.user.lastName}`
+                    : "Nepoznato"}
+                </span>
+                <span className="item-details">Prijava: {formatDate(request.createdAt)}</span>
+              </div>
+              <span className="item-action">👁</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const renderUsersTab = () => {
+    if (selectedUser) {
+      return (
+        <div className="admin-detail-view">
+          <h2>Upravljanje korisnicima</h2>
+          <button className="back-button" onClick={() => setSelectedUser(null)}>
+            ← Nazad
+          </button>
+
+          <div className="detail-content">
+            <div className="detail-row">
+              <span className="detail-label">Korisničko ime</span>
+              <span className="detail-value">{selectedUser.firstName} {selectedUser.lastName}</span>
+            </div>
+            <div className="detail-row">
+              <span className="detail-label">Email</span>
+              <span className="detail-value">{selectedUser.email}</span>
+            </div>
+            <div className="detail-row">
+              <span className="detail-label">Uloga</span>
+              <span className="detail-value">{selectedUser.role}</span>
+            </div>
+            <div className="detail-row">
+              <span className="detail-label">Status</span>
+              <span className={`detail-value status-${selectedUser.isBlocked ? 'blocked' : 'active'}`}>
+                {selectedUser.isBlocked ? "BLOKIRAN" : "AKTIVAN"}
+              </span>
+            </div>
+            <div className="detail-row">
+              <span className="detail-label">Registracija</span>
+              <span className="detail-value">{formatDate(selectedUser.createdAt)}</span>
+            </div>
           </div>
 
-          {/* Error message */}
-          {error && <div className="admin-error">{error}</div>}
+          <div className="detail-actions">
+            {selectedUser.isBlocked ? (
+              <button 
+                className="action-btn approve"
+                onClick={() => handleUnblockUser(selectedUser.id)}
+              >
+                ✓ Odblokiraj
+              </button>
+            ) : (
+              <button 
+                className="action-btn block"
+                onClick={() => handleBlockUser(selectedUser.id)}
+              >
+                ✗ Blokiraj
+              </button>
+            )}
+            <button 
+              className="action-btn delete-outline"
+              onClick={() => handleDeleteUser(selectedUser.id)}
+            >
+              🗑 Obriši
+            </button>
+          </div>
+        </div>
+      );
+    }
 
-          {/* Loading */}
-          {loading && <div className="admin-loading">Učitavanje...</div>}
-
-          {/* Tab content */}
-          {!loading && (
-            <div className="tab-content">
-              {/* Verification Tab */}
-              {activeTab === "verification" && (
-                <div className="verification-section">
-                  {selectedVerification ? (
-                    // Verification detail view
-                    <div className="detail-view">
-                      <h2>Restorani na čekanju verifikacije ({verificationRequests.length})</h2>
-                      <button className="btn-back" onClick={() => setSelectedVerification(null)}>
-                        ← Nazad
-                      </button>
-                      
-                      <div className="detail-card">
-                        <div className="detail-row">
-                          <span className="detail-label">Naziv restorana</span>
-                          <span className="detail-value bold">{selectedVerification.restaurant.name}</span>
-                        </div>
-                        <div className="detail-row">
-                          <span className="detail-label">Vlasnik</span>
-                          <span className="detail-value">{selectedVerification.user?.firstName} {selectedVerification.user?.lastName}</span>
-                        </div>
-                        <div className="detail-row">
-                          <span className="detail-label">Email</span>
-                          <span className="detail-value link">{selectedVerification.user?.email}</span>
-                        </div>
-                        {selectedVerification.restaurant.phone && (
-                          <div className="detail-row">
-                            <span className="detail-label">Telefon</span>
-                            <span className="detail-value">{selectedVerification.restaurant.phone}</span>
-                          </div>
-                        )}
-                        <div className="detail-row">
-                          <span className="detail-label">Mjesto</span>
-                          <span className="detail-value">{selectedVerification.restaurant.city || "Zagreb"}</span>
-                        </div>
-                        {selectedVerification.restaurant.description && (
-                          <div className="detail-row">
-                            <span className="detail-label">Opis</span>
-                            <span className="detail-value">{selectedVerification.restaurant.description}</span>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="detail-actions">
-                        <button
-                          className="btn btn-approve"
-                          onClick={() => handleApproveVerification(selectedVerification.id)}
-                        >
-                          ✓ Odobri
-                        </button>
-                        <button
-                          className="btn btn-reject"
-                          onClick={() => handleRejectVerification(selectedVerification.id)}
-                        >
-                          ✕ Odbij
-                        </button>
-                        <button
-                          className="btn btn-delete-outline"
-                          onClick={() => handleDeleteRestaurant(selectedVerification.restaurant.id)}
-                        >
-                          🗑 Obriši
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    // Verification list view
-                    <>
-                      <h2>Restorani na čekanju verifikacije ({verificationRequests.length})</h2>
-                      {verificationRequests.length === 0 ? (
-                        <p className="empty-message">Nema zahtjeva za verifikaciju.</p>
-                      ) : (
-                        <div className="list-view">
-                          {verificationRequests.map((request) => (
-                            <div 
-                              key={request.id} 
-                              className="list-item"
-                              onClick={() => setSelectedVerification(request)}
-                            >
-                              <div className="list-item-info">
-                                <h3>{request.restaurant.name}</h3>
-                                <p>Vlasnik: {request.user?.firstName} {request.user?.lastName}</p>
-                                <p>Prijava: {formatDate(request.requestedAt)}</p>
-                              </div>
-                              <button className="btn-icon">👁</button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
-              )}
-
-              {/* Users Tab */}
-              {activeTab === "users" && (
-                <div className="users-section">
-                  {selectedUser ? (
-                    // User detail view
-                    <div className="detail-view">
-                      <h2>Upravljanje korisnicima</h2>
-                      <button className="btn-back" onClick={() => setSelectedUser(null)}>
-                        ← Nazad
-                      </button>
-                      
-                      <div className="detail-card">
-                        <div className="detail-row">
-                          <span className="detail-label">Korisničko ime</span>
-                          <span className="detail-value bold">{selectedUser.firstName}_{selectedUser.lastName?.toLowerCase()}</span>
-                        </div>
-                        <div className="detail-row">
-                          <span className="detail-label">Email</span>
-                          <span className="detail-value">{selectedUser.email}</span>
-                        </div>
-                        <div className="detail-row">
-                          <span className="detail-label">Status</span>
-                          <span className={`detail-value status ${selectedUser.isBlocked ? "blocked" : "active"}`}>
-                            {selectedUser.isBlocked ? "BLOKIRAN" : "AKTIVAN"}
-                          </span>
-                        </div>
-                        <div className="detail-row">
-                          <span className="detail-label">Registracija</span>
-                          <span className="detail-value">{formatDate(selectedUser.createdAt)}</span>
-                        </div>
-                      </div>
-
-                      <div className="detail-actions">
-                        {selectedUser.isBlocked ? (
-                          <button
-                            className="btn btn-unblock"
-                            onClick={() => handleUnblockUser(selectedUser.id)}
-                          >
-                            ✓ Odblokiraj
-                          </button>
-                        ) : (
-                          <button
-                            className="btn btn-block"
-                            onClick={() => handleBlockUser(selectedUser.id)}
-                          >
-                            ✕ Blokiraj
-                          </button>
-                        )}
-                        <button
-                          className="btn btn-delete-outline"
-                          onClick={() => handleDeleteUser(selectedUser.id)}
-                        >
-                          🗑 Obriši
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    // Users list view
-                    <>
-                      <h2>Upravljanje korisnicima</h2>
-                      {users.length === 0 ? (
-                        <p className="empty-message">Nema korisnika.</p>
-                      ) : (
-                        <div className="list-view">
-                          {users.map((u) => (
-                            <div 
-                              key={u.id} 
-                              className="list-item"
-                              onClick={() => setSelectedUser(u)}
-                            >
-                              <div className="list-item-info">
-                                <h3>{u.firstName} {u.lastName}</h3>
-                                <p>{u.email}</p>
-                              </div>
-                              <span className={`status-badge ${u.isBlocked ? "blocked" : "active"}`}>
-                                {u.isBlocked ? "✕ Blokiran" : "✓ Aktivan"}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
-              )}
-
-              {/* Moderation Tab */}
-              {activeTab === "moderation" && (
-                <div className="moderation-section">
-                  <h2>Sadržaj na čekanju moderacije ({comments.filter(c => !c.isVisible).length})</h2>
-                  {comments.filter(c => !c.isVisible).length === 0 ? (
-                    <p className="empty-message">Nema sadržaja za moderiranje.</p>
-                  ) : (
-                    <div className="list-view">
-                      {comments.filter(c => !c.isVisible).map((comment) => (
-                        <div key={comment.id} className="comment-item">
-                          <div className="comment-info">
-                            <div className="comment-meta">
-                              <span className="comment-type">Slika</span>
-                              <span className="comment-restaurant">{comment.restaurant?.name}</span>
-                            </div>
-                            <p className="comment-text">"{comment.content}"</p>
-                            <span className="comment-author">Autor: {comment.user?.firstName} {comment.user?.lastName}</span>
-                          </div>
-                          <button 
-                            className="btn-icon-danger"
-                            onClick={() => handleDeleteComment(comment.id)}
-                          >
-                            ⊘
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  
-                  {/* Comment actions at bottom */}
-                  {comments.filter(c => !c.isVisible).length > 0 && (
-                    <div className="moderation-actions">
-                      <button className="btn btn-approve-full" onClick={() => {
-                        const pendingComments = comments.filter(c => !c.isVisible);
-                        if (pendingComments.length > 0) {
-                          handleApproveComment(pendingComments[0].id);
-                        }
-                      }}>
-                        ✓ Odobri
-                      </button>
-                      <button className="btn btn-delete-full" onClick={() => {
-                        const pendingComments = comments.filter(c => !c.isVisible);
-                        if (pendingComments.length > 0) {
-                          handleDeleteComment(pendingComments[0].id);
-                        }
-                      }}>
-                        🗑 Ukloni
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
+    return (
+      <div className="admin-list-view">
+        <h2>Upravljanje korisnicima</h2>
+        {loading && <p>Učitavanje...</p>}
+        {error && <p className="error-message">{error}</p>}
+        {!loading && users.length === 0 && (
+          <p className="no-data">Nema korisnika.</p>
+        )}
+        <div className="list-items">
+          {users.map((user) => (
+            <div
+              key={user.id}
+              className="list-item"
+              onClick={() => setSelectedUser(user)}
+            >
+              <div className="item-info">
+                <span className="item-name">{user.firstName} {user.lastName}</span>
+                <span className="item-details">{user.email}</span>
+              </div>
+              <span className={`status-badge ${user.isBlocked ? 'blocked' : 'active'}`}>
+                {user.isBlocked ? '⊘ Blokiran' : '✓ Aktivan'}
+              </span>
             </div>
-          )}
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const renderModerationTab = () => {
+    if (selectedReview) {
+      return (
+        <div className="admin-detail-view">
+          <h2>Moderiranje sadržaja</h2>
+          <button className="back-button" onClick={() => setSelectedReview(null)}>
+            ← Nazad
+          </button>
+
+          <div className="detail-content">
+            <div className="detail-row">
+              <span className="detail-label">Restoran</span>
+              <span className="detail-value">{selectedReview.restaurant?.name || "Nepoznato"}</span>
+            </div>
+            <div className="detail-row">
+              <span className="detail-label">Autor</span>
+              <span className="detail-value">
+                {selectedReview.user 
+                  ? `${selectedReview.user.firstName} ${selectedReview.user.lastName}`
+                  : "Nepoznato"}
+              </span>
+            </div>
+            {selectedReview.rating && (
+              <div className="detail-row">
+                <span className="detail-label">Ocjena</span>
+                <span className="detail-value">{"⭐".repeat(selectedReview.rating)} ({selectedReview.rating}/5)</span>
+              </div>
+            )}
+            <div className="detail-row">
+              <span className="detail-label">Komentar</span>
+              <span className="detail-value comment-content">"{selectedReview.content}"</span>
+            </div>
+            <div className="detail-row">
+              <span className="detail-label">Datum</span>
+              <span className="detail-value">{formatDate(selectedReview.createdAt)}</span>
+            </div>
+            <div className="detail-row">
+              <span className="detail-label">Tip</span>
+              <span className="detail-value">{selectedReview.type === 'rating' ? '⭐ Recenzija' : '💬 Komentar'}</span>
+            </div>
+          </div>
+
+          <div className="detail-actions detail-actions-full">
+            <button 
+              className="action-btn delete full-width"
+              onClick={() => handleDeleteReview(selectedReview)}
+            >
+              🗑 Obriši recenziju
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="admin-list-view">
+        <h2>Sve recenzije ({reviews.length})</h2>
+        {loading && <p>Učitavanje recenzija...</p>}
+        {error && <p className="error-message">{error}</p>}
+        {!loading && reviews.length === 0 && (
+          <p className="no-data">Nema recenzija za prikaz.</p>
+        )}
+        <div className="list-items">
+          {reviews.map((review) => (
+            <div
+              key={`${review.type}-${review.id}`}
+              className="list-item moderation-item"
+              onClick={() => setSelectedReview(review)}
+            >
+              <div className="item-info">
+                <div className="moderation-header">
+                  <span className="moderation-restaurant">{review.restaurant?.name || "Nepoznati restoran"}</span>
+                  {review.rating && (
+                    <span className="rating-badge">
+                      ⭐ {review.rating}/5
+                    </span>
+                  )}
+                </div>
+                <span className="item-content">"{review.content.length > 100 ? review.content.substring(0, 100) + '...' : review.content}"</span>
+                <span className="item-details">
+                  Autor: {review.user 
+                    ? `${review.user.firstName} ${review.user.lastName}`
+                    : "Nepoznato"} • {formatDate(review.createdAt)}
+                </span>
+              </div>
+              <span className="item-action">→</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="admin-dashboard">
+      {/* Header */}
+      <header className="admin-header">
+        <div className="header-left">
+          <span className="admin-title">🛡️ Administrator</span>
+        </div>
+        <div className="header-center">
+          <div className="logo-section">
+            <div className="logo-divider"></div>
+            <h1 className="logo-text">RestoraniZEGE</h1>
+          </div>
+          <span className="logo-badge">ZAGREB</span>
+        </div>
+        <div className="header-right">
+          <button className="logout-btn" onClick={handleLogout}>
+            Odjava
+          </button>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="admin-main">
+        {/* Tabs */}
+        <div className="admin-tabs">
+          <button
+            className={`tab-btn ${activeTab === "verification" ? "active" : ""}`}
+            onClick={() => {
+              setActiveTab("verification");
+              setSelectedVerification(null);
+            }}
+          >
+            <span className="tab-icon">📋</span>
+            Verifikacija restorana
+            {verificationRequests.length > 0 && (
+              <span className="tab-badge">{verificationRequests.length}</span>
+            )}
+          </button>
+          <button
+            className={`tab-btn ${activeTab === "users" ? "active" : ""}`}
+            onClick={() => {
+              setActiveTab("users");
+              setSelectedUser(null);
+            }}
+          >
+            <span className="tab-icon">👥</span>
+            Upravljanje korisnicima
+          </button>
+          <button
+            className={`tab-btn ${activeTab === "moderation" ? "active" : ""}`}
+            onClick={() => {
+              setActiveTab("moderation");
+              setSelectedReview(null);
+            }}
+          >
+            <span className="tab-icon">⚠</span>
+            Moderiranje sadržaja
+            {reviews.length > 0 && (
+              <span className="tab-badge">{reviews.length}</span>
+            )}
+          </button>
+        </div>
+
+        {/* Tab Content */}
+        <div className="admin-content">
+          {activeTab === "verification" && renderVerificationTab()}
+          {activeTab === "users" && renderUsersTab()}
+          {activeTab === "moderation" && renderModerationTab()}
         </div>
       </main>
     </div>

@@ -887,6 +887,21 @@ export const api = {
       }
    },
 
+   // Request verification for a restaurant (restaurant owner only)
+   async requestVerification(restaurantId: number, notes?: string): Promise<any> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/verification/request`, {
+         method: 'POST',
+         body: JSON.stringify({ restaurantId, notes }),
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to request verification' }));
+         throw new Error(error.message || 'Failed to request verification');
+      }
+
+      return response.json();
+   },
+
    // Get pending verification requests (admin only)
    async getPendingVerifications(): Promise<any[]> {
       const response = await makeAuthenticatedRequest(`${API_BASE_URL}/verification/pending`, {

@@ -121,8 +121,18 @@ function CreateRestaurant() {
         cleanData.workingHours = JSON.stringify(workingHours);
       }
 
-      await api.createRestaurant(cleanData);
-      alert("Restoran je uspješno kreiran! Administrator će verificirati vaš restoran.");
+      // Kreiraj restoran
+      const newRestaurant = await api.createRestaurant(cleanData);
+      
+      // Automatski pošalji zahtjev za verifikaciju
+      try {
+        await api.requestVerification(newRestaurant.id, "Novi restoran - zahtjev za verifikaciju");
+      } catch (verificationError) {
+        console.error("Failed to request verification:", verificationError);
+        // Ne prekidaj proces ako verifikacija ne uspije - restoran je već kreiran
+      }
+      
+      alert("Restoran je uspješno kreiran! Zahtjev za verifikaciju je poslan administratoru.");
       navigate("/dashboard");
     } catch (err: any) {
       console.error("Failed to create restaurant:", err);
