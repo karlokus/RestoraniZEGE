@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { useAuthContext } from "../contexts/AuthContext";
 import { api, CuisineType, PriceRange, type UpdateRestaurantData, type Restaurant } from "../services/api";
 import "../css/CreateRestaurant.css";
@@ -210,6 +210,15 @@ function EditRestaurant() {
     <div className="create-restaurant-page">
       <div className="create-restaurant-container">
         <div className="create-restaurant-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', justifyContent: 'flex-start' }}>
+            <Link 
+              to="/dashboard" 
+              className="back-button"
+              title="Nazad na dashboard"
+            >
+              ← Nazad
+            </Link>
+          </div>
           <h1>Uredi restoran</h1>
           <p>{originalRestaurant?.name}</p>
         </div>

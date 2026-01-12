@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuthContext } from "../contexts/AuthContext";
 import { api, CuisineType, PriceRange, type CreateRestaurantData } from "../services/api";
 import "../css/CreateRestaurant.css";
@@ -136,6 +136,15 @@ function CreateRestaurant() {
     <div className="create-restaurant-page">
       <div className="create-restaurant-container">
         <div className="create-restaurant-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', justifyContent: 'flex-start' }}>
+            <Link 
+              to="/dashboard" 
+              className="back-button"
+              title="Nazad na dashboard"
+            >
+              ← Nazad
+            </Link>
+          </div>
           <h1>Dodaj novi restoran</h1>
           <p>Ispunite podatke o vašem restoranu. Administrator će verificirati unos.</p>
         </div>
