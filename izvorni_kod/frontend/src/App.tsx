@@ -10,6 +10,7 @@ import CreateRestaurant from './pages/CreateRestaurant'
 import EditRestaurant from './pages/EditRestaurant'
 import ManagePhotos from './pages/ManagePhotos'
 import ManageEvents from './pages/ManageEvents'
+import AdminDashboard from './pages/AdminDashboard'
 import { Routes, Route, Navigate } from 'react-router-dom'
 
 function App() {
@@ -30,6 +31,9 @@ function App() {
         <Route path='/dashboard/edit-restaurant/:id' element={<EditRestaurant />} />
         <Route path='/dashboard/manage-photos/:id' element={<ManagePhotos />} />
         <Route path='/dashboard/manage-events/:id' element={<ManageEvents />} />
+
+        {/* Admin dashboard route */}
+        <Route path='/admin' element={<AdminDashboard />} />
 
         <Route path='*' element={<Navigate to='/' />} /> // automatsko preusmjeravanje na homepage za nepoznate rute (URL-ove)
       </Routes>

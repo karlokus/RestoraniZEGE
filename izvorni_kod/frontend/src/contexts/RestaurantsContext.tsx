@@ -53,11 +53,11 @@ export function RestaurantsProvider({ children }: { children: ReactNode }) {
    // Filter states
    const [filters, setFilters] = useState<Filters>(defaultFilters);
 
-   // Učitaj restorane s backend-a
+   // Učitaj restorane s backend-a (samo verificirane za javni prikaz)
    const loadRestaurants = useCallback(async () => {
       try {
          setLoading(true);
-         const data = await api.getRestaurants();
+         const data = await api.getVerifiedRestaurants();
          // Mapiraj backend podatke na frontend Restaurant tip
          const mappedRestaurants: Restaurant[] = data.map((r: any) => {
             // Pronađi primarnu sliku ili prvu sliku iz photos arraya

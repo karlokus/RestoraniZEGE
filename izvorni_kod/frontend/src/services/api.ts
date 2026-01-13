@@ -830,5 +830,174 @@ export const api = {
    async authenticatedRequest(url: string, options: RequestInit = {}): Promise<Response> {
       return makeAuthenticatedRequest(`${API_BASE_URL}${url}`, options);
    },
-};
 
+   // ==================== ADMIN API FUNCTIONS ====================
+
+   // Get all users (admin only)
+   async getAllUsers(): Promise<any[]> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/users`, {
+         method: 'GET',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to fetch users' }));
+         throw new Error(error.message || 'Failed to fetch users');
+      }
+
+      return response.json();
+   },
+
+   // Block user (admin only)
+   async blockUser(userId: number): Promise<any> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/users/${userId}/block`, {
+         method: 'PATCH',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to block user' }));
+         throw new Error(error.message || 'Failed to block user');
+      }
+
+      return response.json();
+   },
+
+   // Unblock user (admin only)
+   async unblockUser(userId: number): Promise<any> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/users/${userId}/unblock`, {
+         method: 'PATCH',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to unblock user' }));
+         throw new Error(error.message || 'Failed to unblock user');
+      }
+
+      return response.json();
+   },
+
+   // Delete user (admin only)
+   async deleteUser(userId: number): Promise<void> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/users/${userId}`, {
+         method: 'DELETE',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to delete user' }));
+         throw new Error(error.message || 'Failed to delete user');
+      }
+   },
+
+   // Request verification for a restaurant (restaurant owner only)
+   async requestVerification(restaurantId: number, notes?: string): Promise<any> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/verification/request`, {
+         method: 'POST',
+         body: JSON.stringify({ restaurantId, notes }),
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to request verification' }));
+         throw new Error(error.message || 'Failed to request verification');
+      }
+
+      return response.json();
+   },
+
+   // Get pending verification requests (admin only)
+   async getPendingVerifications(): Promise<any[]> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/verification/pending`, {
+         method: 'GET',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to fetch pending verifications' }));
+         throw new Error(error.message || 'Failed to fetch pending verifications');
+      }
+
+      return response.json();
+   },
+
+   // Approve verification request (admin only)
+   async approveVerification(id: number): Promise<any> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/verification/${id}/approve`, {
+         method: 'PATCH',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to approve verification' }));
+         throw new Error(error.message || 'Failed to approve verification');
+      }
+
+      return response.json();
+   },
+
+   // Reject verification request (admin only)
+   async rejectVerification(id: number, reason: string): Promise<any> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/verification/${id}/reject`, {
+         method: 'PATCH',
+         body: JSON.stringify({ rejectionReason: reason }),
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to reject verification' }));
+         throw new Error(error.message || 'Failed to reject verification');
+      }
+
+      return response.json();
+   },
+
+   // Get all comments (admin only)
+   async getAllComments(): Promise<any[]> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/comments`, {
+         method: 'GET',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to fetch comments' }));
+         throw new Error(error.message || 'Failed to fetch comments');
+      }
+
+      return response.json();
+   },
+
+   // Hide comment (admin only)
+   async hideComment(commentId: number): Promise<any> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/comments/${commentId}/hide`, {
+         method: 'PATCH',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to hide comment' }));
+         throw new Error(error.message || 'Failed to hide comment');
+      }
+
+      return response.json();
+   },
+
+   // Show comment (admin only)
+   async showComment(commentId: number): Promise<any> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/comments/${commentId}/show`, {
+         method: 'PATCH',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to show comment' }));
+         throw new Error(error.message || 'Failed to show comment');
+      }
+
+      return response.json();
+   },
+
+   // Get admin dashboard statistics
+   async getAdminDashboard(): Promise<any> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/admin/dashboard`, {
+         method: 'GET',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to fetch dashboard' }));
+         throw new Error(error.message || 'Failed to fetch dashboard');
+      }
+
+      return response.json();
+   },
+};

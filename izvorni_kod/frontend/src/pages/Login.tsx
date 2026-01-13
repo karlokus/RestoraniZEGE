@@ -37,7 +37,9 @@ function Login() {
     try {
       const userData = await login({ email, password });
       // Redirect based on user role
-      if (userData?.role === "restaurant") {
+      if (userData?.role === "admin") {
+        navigate("/admin");
+      } else if (userData?.role === "restaurant") {
         navigate("/dashboard");
       } else {
         navigate("/");
@@ -55,7 +57,9 @@ function Login() {
     try {
       const userData = await googleAuth({ token: credential });
       // Redirect based on user role
-      if (userData?.role === "restaurant") {
+      if (userData?.role === "admin") {
+        navigate("/admin");
+      } else if (userData?.role === "restaurant") {
         navigate("/dashboard");
       } else {
         navigate("/");
