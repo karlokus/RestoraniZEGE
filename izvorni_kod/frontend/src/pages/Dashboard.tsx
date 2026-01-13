@@ -143,7 +143,7 @@ function Dashboard() {
                     <div className="restaurant-card-header">
                       <h3>{restaurant.name}</h3>
                       <span className={`status-badge ${restaurant.verified ? 'verified' : 'pending'}`}>
-                        {restaurant.verified ? '✓ Verificiran' : '⏳ Na čekanju'}
+                        {restaurant.verified ? 'Verificiran' : 'Na čekanju'}
                       </span>
                     </div>
 
@@ -196,19 +196,19 @@ function Dashboard() {
                         to={`/dashboard/manage-photos/${restaurant.id}`}
                         className="btn-photos"
                       >
-                        🖼 Slike
+                        Slike
                       </Link>
                       <Link
                         to={`/dashboard/manage-events/${restaurant.id}`}
                         className="btn-events"
                       >
-                        📅 Događaji
+                        Događaji
                       </Link>
                       <button
                         className="btn-delete"
                         onClick={() => handleDeleteRestaurant(restaurant.id, restaurant.name)}
                       >
-                        🗑 Obriši
+                        Obriši
                       </button>
                     </div>
                   </div>

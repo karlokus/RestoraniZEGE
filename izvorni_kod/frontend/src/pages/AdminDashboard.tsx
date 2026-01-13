@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { api, clearTokens } from "../services/api";
+import chefImg from "../assets/chef.png";
 import "../css/AdminDashboard.css";
 
 // Types
@@ -293,19 +294,19 @@ function AdminDashboard() {
               className="action-btn approve"
               onClick={() => handleApproveVerification(selectedVerification.id)}
             >
-              ✓ Odobri
+              Odobri
             </button>
             <button 
               className="action-btn reject"
               onClick={() => handleRejectVerification(selectedVerification.id)}
             >
-              ✗ Odbij
+              Odbij
             </button>
             <button 
               className="action-btn delete-outline"
               onClick={() => handleDeleteVerification(selectedVerification.id)}
             >
-              🗑 Obriši
+              Obriši
             </button>
           </div>
         </div>
@@ -324,19 +325,52 @@ function AdminDashboard() {
           {verificationRequests.map((request) => (
             <div
               key={request.id}
-              className="list-item"
+              className="list-item verification-card"
               onClick={() => setSelectedVerification(request)}
             >
-              <div className="item-info">
-                <span className="item-name">{request.restaurant.name}</span>
-                <span className="item-details">
-                  Vlasnik: {request.restaurant.user 
-                    ? `${request.restaurant.user.firstName} ${request.restaurant.user.lastName}`
-                    : "Nepoznato"}
-                </span>
-                <span className="item-details">Prijava: {formatDate(request.createdAt)}</span>
+              <div className="verification-card-left">
+                <div className="verification-status">Na čekanju</div>
               </div>
-              <span className="item-action">👁</span>
+              
+              <div className="verification-card-content">
+                <div className="verification-card-title">
+                  <h3>{request.restaurant.name}</h3>
+                </div>
+                
+                <div className="verification-card-info">
+                  <div className="info-group">
+                    <span className="info-label">Owner</span>
+                    <span className="info-value">
+                      {request.restaurant.user 
+                        ? `${request.restaurant.user.firstName} ${request.restaurant.user.lastName}`
+                        : "Unknown"}
+                    </span>
+                  </div>
+                  
+                  {request.restaurant.city && (
+                    <div className="info-group">
+                      <span className="info-label">Location</span>
+                      <span className="info-value">{request.restaurant.city}</span>
+                    </div>
+                  )}
+                  
+                  {request.restaurant.phone && (
+                    <div className="info-group">
+                      <span className="info-label">Phone</span>
+                      <span className="info-value">{request.restaurant.phone}</span>
+                    </div>
+                  )}
+                </div>
+                
+                {request.restaurant.description && (
+                  <p className="verification-description">{request.restaurant.description.substring(0, 120)}</p>
+                )}
+              </div>
+              
+              <div className="verification-card-right">
+                <span className="date-label">{formatDate(request.createdAt)}</span>
+                <span className="action-arrow">›</span>
+              </div>
             </div>
           ))}
         </div>
@@ -384,21 +418,21 @@ function AdminDashboard() {
                 className="action-btn approve"
                 onClick={() => handleUnblockUser(selectedUser.id)}
               >
-                ✓ Odblokiraj
+                Odblokiraj
               </button>
             ) : (
               <button 
                 className="action-btn block"
                 onClick={() => handleBlockUser(selectedUser.id)}
               >
-                ✗ Blokiraj
+                Blokiraj
               </button>
             )}
             <button 
               className="action-btn delete-outline"
               onClick={() => handleDeleteUser(selectedUser.id)}
             >
-              🗑 Obriši
+              Obriši
             </button>
           </div>
         </div>
@@ -459,7 +493,7 @@ function AdminDashboard() {
             {selectedReview.rating && (
               <div className="detail-row">
                 <span className="detail-label">Ocjena</span>
-                <span className="detail-value">{"⭐".repeat(selectedReview.rating)} ({selectedReview.rating}/5)</span>
+                <span className="detail-value">{selectedReview.rating}/5</span>
               </div>
             )}
             <div className="detail-row">
@@ -472,7 +506,7 @@ function AdminDashboard() {
             </div>
             <div className="detail-row">
               <span className="detail-label">Tip</span>
-              <span className="detail-value">{selectedReview.type === 'rating' ? '⭐ Recenzija' : '💬 Komentar'}</span>
+              <span className="detail-value">{selectedReview.type === 'rating' ? 'Recenzija' : 'Komentar'}</span>
             </div>
           </div>
 
@@ -481,7 +515,7 @@ function AdminDashboard() {
               className="action-btn delete full-width"
               onClick={() => handleDeleteReview(selectedReview)}
             >
-              🗑 Obriši recenziju
+              Obriši recenziju
             </button>
           </div>
         </div>
@@ -508,7 +542,7 @@ function AdminDashboard() {
                   <span className="moderation-restaurant">{review.restaurant?.name || "Nepoznati restoran"}</span>
                   {review.rating && (
                     <span className="rating-badge">
-                      ⭐ {review.rating}/5
+                      {review.rating}/5
                     </span>
                   )}
                 </div>
@@ -529,72 +563,70 @@ function AdminDashboard() {
 
   return (
     <div className="admin-dashboard">
-      {/* Header */}
-      <header className="admin-header">
-        <div className="header-left">
-          <span className="admin-title">🛡️ Administrator</span>
-        </div>
-        <div className="header-center">
-          <div className="logo-section">
-            <div className="logo-divider"></div>
-            <h1 className="logo-text">RestoraniZEGE</h1>
+      {/* Header - Moderan dizajn kao Dashboard */}
+      <header className="admin-dashboard-header">
+        <div className="dashboard-header-content">
+          <Link to="/" className="dashboard-logo">
+            RestoraniZEGE
+          </Link>
+          <div className="dashboard-header-center">
+            <img className="dashboard-chef-img" src={chefImg} alt="Chef" />
           </div>
-          <span className="logo-badge">ZAGREB</span>
-        </div>
-        <div className="header-right">
-          <button className="logout-btn" onClick={handleLogout}>
-            Odjava
-          </button>
+          <div className="dashboard-user">
+            <span className="user-name">Administrator</span>
+            <button className="logout-btn" onClick={handleLogout}>
+              Odjava
+            </button>
+          </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="admin-main">
-        {/* Tabs */}
-        <div className="admin-tabs">
-          <button
-            className={`tab-btn ${activeTab === "verification" ? "active" : ""}`}
-            onClick={() => {
-              setActiveTab("verification");
-              setSelectedVerification(null);
-            }}
-          >
-            <span className="tab-icon">📋</span>
-            Verifikacija restorana
-            {verificationRequests.length > 0 && (
-              <span className="tab-badge">{verificationRequests.length}</span>
-            )}
-          </button>
-          <button
-            className={`tab-btn ${activeTab === "users" ? "active" : ""}`}
-            onClick={() => {
-              setActiveTab("users");
-              setSelectedUser(null);
-            }}
-          >
-            <span className="tab-icon">👥</span>
-            Upravljanje korisnicima
-          </button>
-          <button
-            className={`tab-btn ${activeTab === "moderation" ? "active" : ""}`}
-            onClick={() => {
-              setActiveTab("moderation");
-              setSelectedReview(null);
-            }}
-          >
-            <span className="tab-icon">⚠</span>
-            Moderiranje sadržaja
-            {reviews.length > 0 && (
-              <span className="tab-badge">{reviews.length}</span>
-            )}
-          </button>
-        </div>
+        <div className="admin-container">
+          {/* Tabs */}
+          <div className="admin-tabs">
+            <button
+              className={`tab-btn ${activeTab === "verification" ? "active" : ""}`}
+              onClick={() => {
+                setActiveTab("verification");
+                setSelectedVerification(null);
+              }}
+            >
+              Verifikacija restorana
+              {verificationRequests.length > 0 && (
+                <span className="tab-badge">{verificationRequests.length}</span>
+              )}
+            </button>
+            <button
+              className={`tab-btn ${activeTab === "users" ? "active" : ""}`}
+              onClick={() => {
+                setActiveTab("users");
+                setSelectedUser(null);
+              }}
+            >
+              Upravljanje korisnicima
+            </button>
+            <button
+              className={`tab-btn ${activeTab === "moderation" ? "active" : ""}`}
+              onClick={() => {
+                setActiveTab("moderation");
+                setSelectedReview(null);
+              }}
+            >
+              Moderiranje sadržaja
+              {reviews.length > 0 && (
+                <span className="tab-badge">{reviews.length}</span>
+              )}
+            </button>
+          </div>
 
-        {/* Tab Content */}
-        <div className="admin-content">
-          {activeTab === "verification" && renderVerificationTab()}
-          {activeTab === "users" && renderUsersTab()}
-          {activeTab === "moderation" && renderModerationTab()}
+          {/* Tab Content */}
+          <div className="admin-content">
+            {activeTab === "verification" && renderVerificationTab()}
+            {activeTab === "users" && renderUsersTab()}
+            {activeTab === "moderation" && renderModerationTab()}
+          </div>
         </div>
       </main>
     </div>

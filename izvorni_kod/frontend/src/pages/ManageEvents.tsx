@@ -159,11 +159,12 @@ function ManageEvents() {
   return (
     <div className="manage-events-page">
       <header className="manage-events-header">
-        <div className="header-content">
-          <Link to="/dashboard" className="back-link">
-            ← Natrag na Dashboard
+        <div className="manage-events-header-content">
+          <Link to="/dashboard" className="manage-back-link">
+            ← Nazad na Dashboard
           </Link>
           <h1>Upravljanje događajima</h1>
+          <div style={{ width: '150px' }}></div>
         </div>
       </header>
 
@@ -256,16 +257,19 @@ function ManageEvents() {
                     <div className="event-content">
                       <h3>{event.title}</h3>
                       <p className="event-date">
-                        📅 {new Date(event.eventDate).toLocaleDateString('hr-HR', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
-                        {' u '}
-                        🕐 {new Date(event.eventDate).toLocaleTimeString('hr-HR', {
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
+                        <span className="event-date-label">Datum i vrijeme:</span>
+                        <span className="event-date-value">
+                          {new Date(event.eventDate).toLocaleDateString('hr-HR', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                          {' u '}
+                          {new Date(event.eventDate).toLocaleTimeString('hr-HR', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
                       </p>
                       <p className="event-description">{event.description}</p>
                     </div>
