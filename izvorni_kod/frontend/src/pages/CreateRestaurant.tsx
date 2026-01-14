@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuthContext } from "../contexts/AuthContext";
 import { api, CuisineType, PriceRange, type CreateRestaurantData } from "../services/api";
 import "../css/CreateRestaurant.css";
@@ -121,8 +121,18 @@ function CreateRestaurant() {
         cleanData.workingHours = JSON.stringify(workingHours);
       }
 
-      await api.createRestaurant(cleanData);
-      alert("Restoran je uspješno kreiran! Administrator će verificirati vaš restoran.");
+      // Kreiraj restoran
+      const newRestaurant = await api.createRestaurant(cleanData);
+      
+      // Automatski pošalji zahtjev za verifikaciju
+      try {
+        await api.requestVerification(newRestaurant.id, "Novi restoran - zahtjev za verifikaciju");
+      } catch (verificationError) {
+        console.error("Failed to request verification:", verificationError);
+        // Ne prekidaj proces ako verifikacija ne uspije - restoran je već kreiran
+      }
+      
+      alert("Restoran je uspješno kreiran! Zahtjev za verifikaciju je poslan administratoru.");
       navigate("/dashboard");
     } catch (err: any) {
       console.error("Failed to create restaurant:", err);
@@ -136,6 +146,15 @@ function CreateRestaurant() {
     <div className="create-restaurant-page">
       <div className="create-restaurant-container">
         <div className="create-restaurant-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', justifyContent: 'flex-start' }}>
+            <Link 
+              to="/dashboard" 
+              className="back-button"
+              title="Nazad na dashboard"
+            >
+              ← Nazad
+            </Link>
+          </div>
           <h1>Dodaj novi restoran</h1>
           <p>Ispunite podatke o vašem restoranu. Administrator će verificirati unos.</p>
         </div>

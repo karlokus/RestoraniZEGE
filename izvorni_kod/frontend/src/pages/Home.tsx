@@ -142,7 +142,7 @@ function Home() {
                                                 <h4>{notification.title}</h4>
                                                 <p>{notification.message}</p>
                                                 <span className="notification-time">
-                                                   {formatTimestamp(notification.timestamp)}
+                                                   {formatTimestamp(notification.sentAt)}
                                                 </span>
                                              </div>
                                              {!notification.read && (

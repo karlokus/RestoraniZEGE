@@ -57,9 +57,13 @@ function RestaurantDetail({ restaurant, isOpen, onClose }: RestaurantDetailProps
 
    const [details, setDetails] = useState<RestaurantDetails | null>(null);
    const [loading, setLoading] = useState(true);
-   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
+   const [activeGalleryIndex] = useState(0);
    const [carouselIndex, setCarouselIndex] = useState(0);
    const [refreshTrigger, setRefreshTrigger] = useState(0); // Za refreshanje podataka
+
+   // State za lightbox
+   const [lightboxOpen, setLightboxOpen] = useState(false);
+   const [lightboxIndex, setLightboxIndex] = useState(0);
 
    // State za recenziju (ocjena + komentar)
    const [newComment, setNewComment] = useState("");
@@ -73,6 +77,50 @@ function RestaurantDetail({ restaurant, isOpen, onClose }: RestaurantDetailProps
    const touchEndX = useRef<number>(0);
 
    const isFav = isFavorite(restaurant.id);
+
+   // Lightbox funkcije
+   const openLightbox = (index: number) => {
+      setLightboxIndex(index);
+      setLightboxOpen(true);
+   };
+
+   const closeLightbox = () => {
+      setLightboxOpen(false);
+   };
+
+   const goToPrevImage = () => {
+      if (details?.gallery) {
+         setLightboxIndex((prev) => (prev === 0 ? details.gallery!.length - 1 : prev - 1));
+      }
+   };
+
+   const goToNextImage = () => {
+      if (details?.gallery) {
+         setLightboxIndex((prev) => (prev === details.gallery!.length - 1 ? 0 : prev + 1));
+      }
+   };
+
+   // Keyboard navigation za lightbox
+   useEffect(() => {
+      const handleKeyDown = (e: KeyboardEvent) => {
+         if (!lightboxOpen) return;
+
+         switch (e.key) {
+            case 'Escape':
+               closeLightbox();
+               break;
+            case 'ArrowLeft':
+               goToPrevImage();
+               break;
+            case 'ArrowRight':
+               goToNextImage();
+               break;
+         }
+      };
+
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+   }, [lightboxOpen, details?.gallery]);
 
    useEffect(() => {
       if (!isOpen || !restaurant) return;
@@ -97,8 +145,8 @@ function RestaurantDetail({ restaurant, isOpen, onClose }: RestaurantDetailProps
             const reviews: Review[] = comments.map((comment: ApiComment) => ({
                id: comment.id,
                userId: comment.userId,
-               userName: comment.user 
-                  ? `${comment.user.firstName} ${comment.user.lastName}`.trim() 
+               userName: comment.user
+                  ? `${comment.user.firstName} ${comment.user.lastName}`.trim()
                   : `Korisnik ${comment.userId}`,
                rating: 0, // Komentari nemaju rating
                comment: comment.content,
@@ -109,8 +157,8 @@ function RestaurantDetail({ restaurant, isOpen, onClose }: RestaurantDetailProps
             const ratingsAsReviews: Review[] = ratings.map((rating: ApiRating) => ({
                id: rating.id + 10000, // Offset da izbjegnemo duplikate ID-a
                userId: rating.userId,
-               userName: rating.user 
-                  ? `${rating.user.firstName} ${rating.user.lastName}`.trim() 
+               userName: rating.user
+                  ? `${rating.user.firstName} ${rating.user.lastName}`.trim()
                   : `Korisnik ${rating.userId}`,
                rating: rating.rating,
                comment: rating.comment || "",
@@ -123,7 +171,7 @@ function RestaurantDetail({ restaurant, isOpen, onClose }: RestaurantDetailProps
                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
             // Mapiraj slike u gallery
-            const gallery = photos.length > 0 
+            const gallery = photos.length > 0
                ? photos.map((p: RestaurantPhoto) => p.photoUrl)
                : [restaurant.imageUrl || "https://via.placeholder.com/400x300?text=Restaurant"];
 
@@ -145,7 +193,7 @@ function RestaurantDetail({ restaurant, isOpen, onClose }: RestaurantDetailProps
                id: restaurantData.id,
                name: restaurantData.name || restaurant.name,
                cuisine: restaurantData.cuisineType || restaurant.cuisine,
-               location: restaurantData.adress 
+               location: restaurantData.adress
                   ? `${restaurantData.adress}${restaurantData.city ? ', ' + restaurantData.city : ''}`
                   : restaurant.location,
                rating: restaurantData.averageRating || restaurant.rating,
@@ -425,7 +473,7 @@ function RestaurantDetail({ restaurant, isOpen, onClose }: RestaurantDetailProps
                                        <div
                                           key={index}
                                           className={`gallery-carousel-item ${activeGalleryIndex === index ? "active" : ""}`}
-                                          onClick={() => setActiveGalleryIndex(index)}
+                                          onClick={() => openLightbox(index)}
                                        >
                                           <img src={image} alt={`${details.name} - slika ${index + 1}`} />
                                        </div>
@@ -450,7 +498,7 @@ function RestaurantDetail({ restaurant, isOpen, onClose }: RestaurantDetailProps
                                     <div
                                        key={index}
                                        className={`gallery-item ${activeGalleryIndex === index ? "active" : ""}`}
-                                       onClick={() => setActiveGalleryIndex(index)}
+                                       onClick={() => openLightbox(index)}
                                     >
                                        <img src={image} alt={`${details.name} - slika ${index + 1}`} />
                                     </div>
@@ -543,7 +591,7 @@ function RestaurantDetail({ restaurant, isOpen, onClose }: RestaurantDetailProps
                   {isAuthenticated && (
                      <div className="detail-section">
                         <h2 className="section-title">Ostavite svoju recenziju</h2>
-                        
+
                         {/* Combined rating and comment input */}
                         <div className="add-review">
                            <div className="rating-row">
@@ -563,7 +611,7 @@ function RestaurantDetail({ restaurant, isOpen, onClose }: RestaurantDetailProps
                                  ))}
                               </div>
                            </div>
-                           
+
                            <textarea
                               className="comment-input"
                               placeholder="Napišite svoj komentar o restoranu (opciono)..."
@@ -571,9 +619,9 @@ function RestaurantDetail({ restaurant, isOpen, onClose }: RestaurantDetailProps
                               onChange={(e) => setNewComment(e.target.value)}
                               rows={4}
                            />
-                           
+
                            {newRating > 0 && (
-                              <button 
+                              <button
                                  className="submit-review-btn"
                                  onClick={handleSubmitReview}
                                  disabled={submittingRating}
@@ -597,6 +645,47 @@ function RestaurantDetail({ restaurant, isOpen, onClose }: RestaurantDetailProps
                <div className="detail-error">Nije moguće učitati podatke o restoranu.</div>
             )}
          </div>
+
+         {lightboxOpen && details?.gallery && (
+            <div className="lightbox-backdrop" onClick={closeLightbox}>
+               <div className="lightbox-container" onClick={(e) => e.stopPropagation()}>
+                  <button className="lightbox-close" onClick={closeLightbox} aria-label="Zatvori">
+                     ✕
+                  </button>
+
+                  <button className="lightbox-nav lightbox-prev" onClick={goToPrevImage} aria-label="Prethodna slika">
+                     ‹
+                  </button>
+
+                  <div className="lightbox-content">
+                     <img
+                        src={details.gallery[lightboxIndex]}
+                        alt={`${details.name} - slika ${lightboxIndex + 1}`}
+                     />
+                  </div>
+
+                  <button className="lightbox-nav lightbox-next" onClick={goToNextImage} aria-label="Sljedeća slika">
+                     ›
+                  </button>
+
+                  <div className="lightbox-counter">
+                     {lightboxIndex + 1} / {details.gallery.length}
+                  </div>
+
+                  <div className="lightbox-thumbnails">
+                     {details.gallery.map((image, index) => (
+                        <div
+                           key={index}
+                           className={`lightbox-thumbnail ${lightboxIndex === index ? 'active' : ''}`}
+                           onClick={() => setLightboxIndex(index)}
+                        >
+                           <img src={image} alt={`Thumbnail ${index + 1}`} />
+                        </div>
+                     ))}
+                  </div>
+               </div>
+            </div>
+         )}
       </div>
    );
 }

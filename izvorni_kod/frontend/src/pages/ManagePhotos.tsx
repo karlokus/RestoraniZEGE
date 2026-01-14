@@ -114,11 +114,12 @@ function ManagePhotos() {
   return (
     <div className="manage-photos-page">
       <header className="manage-photos-header">
-        <div className="header-content">
-          <Link to="/dashboard" className="back-link">
-            ← Natrag na Dashboard
+        <div className="manage-photos-header-content">
+          <Link to="/dashboard" className="manage-back-link">
+            ← Nazad na Dashboard
           </Link>
           <h1>Upravljanje slikama</h1>
+          <div style={{ width: '150px' }}></div>
         </div>
       </header>
 

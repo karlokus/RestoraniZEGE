@@ -24,7 +24,7 @@ export class RestaurantsService {
 
         @Inject(forwardRef(() => RatingsService))
         private readonly ratingsService: RatingsService,
-    ) {}
+    ) { }
 
     public async getAllRestaurants() {
         return await this.restaurantsRepository.find({
@@ -65,11 +65,11 @@ export class RestaurantsService {
         }
 
         let coordinates;
-        if(createRestaurantDto.adress && createRestaurantDto.city) {
+        if (createRestaurantDto.adress && createRestaurantDto.city) {
             coordinates = await this.geocodeProvider.geocode(createRestaurantDto.adress, createRestaurantDto.city);
         }
 
-        if(!coordinates) {
+        if (!coordinates) {
             throw new Error('Adresa nije pronađena, upišite ispravnu adresu');
         } else {
             createRestaurantDto.longitude = coordinates.longitude;
@@ -133,18 +133,22 @@ export class RestaurantsService {
             throw new BadRequestException('Restaurant does not exist');
         }
 
-        let coordinates;
-        if(updateRestaurantDto.adress && updateRestaurantDto.city) {
-            coordinates = await this.geocodeProvider.geocode(updateRestaurantDto.adress, updateRestaurantDto.city);
-        }
+        // Geocoding samo ako se ažurira adresa ili grad
+        if (updateRestaurantDto.adress || updateRestaurantDto.city) {
+            const addressToGeocode = updateRestaurantDto.adress || restaurant.adress;
+            const cityToGeocode = updateRestaurantDto.city || restaurant.city;
 
-        if(!coordinates) {
-            throw new Error('Adresa nije pronađena, upišite ispravnu adresu');
-        } else {
-            updateRestaurantDto.longitude = coordinates.longitude;
-            updateRestaurantDto.latitude = coordinates.latitude;
-        }
+            if (addressToGeocode && cityToGeocode) {
+                const coordinates = await this.geocodeProvider.geocode(addressToGeocode, cityToGeocode);
 
+                if (!coordinates) {
+                    throw new Error('Adresa nije pronađena, upišite ispravnu adresu');
+                }
+
+                updateRestaurantDto.longitude = coordinates.longitude;
+                updateRestaurantDto.latitude = coordinates.latitude;
+            }
+        }
 
         Object.assign(restaurant, updateRestaurantDto);
 
@@ -169,7 +173,7 @@ export class RestaurantsService {
 
     public async removeRestaurant(id: number) {
         const result = await this.restaurantsRepository.delete(id);
-        return { deleted: result.affected! > 0 ? true : false, id}
+        return { deleted: result.affected! > 0 ? true : false, id }
     }
 
     /**

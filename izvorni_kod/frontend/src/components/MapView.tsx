@@ -49,7 +49,7 @@ function MapUpdater({ restaurants }: { restaurants: Restaurant[] }) {
          );
 
          // Prilagodi mapu da prikaže sve restorane, ali ostani unutar Zagreba
-         map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15, minZoom: 11 });
+         map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
       }
    }, [restaurants, map]);
 

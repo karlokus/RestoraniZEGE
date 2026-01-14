@@ -7,6 +7,7 @@ import { Event } from './entities/event.entity';
 import { RestaurantsModule } from 'src/restaurants/restaurants.module';
 import { FavoritesModule } from 'src/favorites/favorites.module';
 import { MailerModule } from 'src/mailer/mailer.module';
+import { NotificationsModule } from 'src/notification/notifications.model';
 
 @Module({
   controllers: [EventsController],
@@ -16,6 +17,7 @@ import { MailerModule } from 'src/mailer/mailer.module';
     RestaurantsModule,
     FavoritesModule,
     MailerModule,
+    NotificationsModule,
   ],
   exports: [EventsService]
 })

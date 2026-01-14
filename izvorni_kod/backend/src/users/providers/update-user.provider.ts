@@ -36,9 +36,10 @@ export class UpdateUserProvider {
             throw new BadRequestException('User does not exist');
         }
 
-        //user.username = updateUserDto.username ?? user.username;      // todo -> ime prezime
+        user.firstName = updateUserDto.firstName ?? user.firstName;
+        user.lastName = updateUserDto.lastName ?? user.lastName;
         user.email = updateUserDto.email ?? user.email;
-        user.role = updateUserDto.role ?? user.role;                    // todo -> rolu nesmije mjenjat
+        // user.role = updateUserDto.role ?? user.role; 
 
         try {
             await this.usersRepository.save(user);

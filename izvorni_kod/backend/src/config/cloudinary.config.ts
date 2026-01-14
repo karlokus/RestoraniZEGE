@@ -33,7 +33,7 @@ export const cloudinaryStorage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
         folder: 'restaurants',
-        allowed_formats: ['jpg', 'jpeg', 'png', 'gif'],
+        allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
         transformation: [
             { width: 1000, height: 1000, crop: 'limit' },
             { quality: 'auto' },

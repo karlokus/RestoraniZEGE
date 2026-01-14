@@ -51,7 +51,8 @@
    height: 56px;
    border-radius: 50%;
    transform: rotate(-45deg);
-   margin: -8px; /* expand beyond pin bounds */
+   margin: -8px;
+   /* expand beyond pin bounds */
    opacity: 0;
 }
 
@@ -63,9 +64,20 @@
 }
 
 @keyframes markerPulse {
-   0% { transform: rotate(-45deg) scale(0.95); opacity: 0.6; }
-   60% { transform: rotate(-45deg) scale(1.15); opacity: 1; }
-   100% { transform: rotate(-45deg) scale(1.0); opacity: 0.9; }
+   0% {
+      transform: rotate(-45deg) scale(0.95);
+      opacity: 0.6;
+   }
+
+   60% {
+      transform: rotate(-45deg) scale(1.15);
+      opacity: 1;
+   }
+
+   100% {
+      transform: rotate(-45deg) scale(1.0);
+      opacity: 0.9;
+   }
 }
 
 /* Leaflet popup customization */

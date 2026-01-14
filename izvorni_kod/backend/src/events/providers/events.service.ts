@@ -17,6 +17,7 @@ import { RestaurantsService } from 'src/restaurants/providers/restaurants.servic
 import { FavoritesService } from 'src/favorites/providers/favorites.service';
 import { MailerService } from 'src/mailer/providers/mailer.service';
 import { EmailTemplatesService } from 'src/mailer/providers/email-templates.service';
+import { NotificationsService } from 'src/notification/providers/notifications.service';
 
 @Injectable()
 export class EventsService {
@@ -33,6 +34,8 @@ export class EventsService {
         private readonly mailerService: MailerService,
 
         private readonly emailTemplatesService: EmailTemplatesService,
+
+        private readonly notificationsService: NotificationsService,
     ) {}
 
     public async createEvent(createEventDto: CreateEventDto, userId: number): Promise<Event> {
@@ -87,6 +90,13 @@ export class EventsService {
             }
 
             this.logger.log(`Sending event notifications to ${users.length} users for event ${event.id}`);
+
+            // Kreiraj DB notifikacije za sve korisnike
+            await this.notificationsService.createEventNotifications(
+                event,
+                users.map(u => u.id),
+                restaurantName,
+            );
 
             // Šalji email svakom korisniku
             for (const user of users) {
