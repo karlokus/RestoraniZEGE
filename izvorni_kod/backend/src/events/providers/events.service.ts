@@ -2,7 +2,8 @@ import {
     Injectable,
     NotFoundException,
     BadRequestException,
-    ForbiddenException
+    ForbiddenException,
+    Logger
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -14,9 +15,13 @@ import { Restaurant } from 'src/restaurants/entities/restaurant.entity';
 import { Favorite } from 'src/favorites/entities/favorite.entity';
 import { RestaurantsService } from 'src/restaurants/providers/restaurants.service';
 import { FavoritesService } from 'src/favorites/providers/favorites.service';
+import { MailerService } from 'src/mailer/providers/mailer.service';
+import { EmailTemplatesService } from 'src/mailer/providers/email-templates.service';
 
 @Injectable()
 export class EventsService {
+    private readonly logger = new Logger(EventsService.name);
+
     constructor(
         @InjectRepository(Event)
         private readonly eventsRepository: Repository<Event>,
@@ -24,6 +29,10 @@ export class EventsService {
         private readonly restaurantsService: RestaurantsService,
 
         private readonly favoritesService: FavoritesService,
+
+        private readonly mailerService: MailerService,
+
+        private readonly emailTemplatesService: EmailTemplatesService,
     ) {}
 
     public async createEvent(createEventDto: CreateEventDto, userId: number): Promise<Event> {
@@ -48,7 +57,58 @@ export class EventsService {
             restaurant: { id: +createEventDto.restaurantId },
         });
 
-        return await this.eventsRepository.save(event);
+        // Spremi event u bazu
+        const savedEvent = await this.eventsRepository.save(event);
+
+        // Asinkrono šalji email notifikacije korisnicima koji su favoritali restoran
+        // Fire-and-forget: ne čekamo rezultat i ne blokiramo kreiranje eventa
+        this.sendEventNotifications(savedEvent, restaurant.name).catch((error) => {
+            this.logger.error(
+                `Failed to send event notifications for event ${savedEvent.id}`,
+                error.stack,
+            );
+        });
+
+        return savedEvent;
+    }
+
+    /**
+     * Send email notifications to all users who favorited the restaurant
+     * This is a fire-and-forget operation - errors are logged but don't affect event creation
+     */
+    private async sendEventNotifications(event: Event, restaurantName: string): Promise<void> {
+        try {
+            // Dohvati sve korisnike koji su favoritali restoran
+            const users = await this.favoritesService.getUsersByFavoritedRestaurant(event.restaurant.id);
+
+            if (users.length === 0) {
+                this.logger.log(`No users to notify for event ${event.id}`);
+                return;
+            }
+
+            this.logger.log(`Sending event notifications to ${users.length} users for event ${event.id}`);
+
+            // Šalji email svakom korisniku
+            for (const user of users) {
+                const { subject, text } = this.emailTemplatesService.generateNewEventEmail(
+                    user,
+                    event,
+                    restaurantName,
+                );
+
+                // Fire-and-forget: ne čekamo rezultat
+                this.mailerService.sendMailAsync({
+                    to: user.email,
+                    subject,
+                    text,
+                });
+            }
+
+            this.logger.log(`Queued ${users.length} email notifications for event ${event.id}`);
+        } catch (error) {
+            this.logger.error(`Error in sendEventNotifications for event ${event.id}`, error.stack);
+            // Ne bacamo error - ne želimo blokirati kreiranje eventa
+        }
     }
 
     public async findAll(restaurantId?: string): Promise<Event[]> {
