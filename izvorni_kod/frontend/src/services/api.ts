@@ -831,7 +831,6 @@ export const api = {
       return makeAuthenticatedRequest(`${API_BASE_URL}${url}`, options);
    },
 
-   // ==================== ADMIN API FUNCTIONS ====================
 
    // Get all users (admin only)
    async getAllUsers(): Promise<any[]> {
@@ -885,6 +884,36 @@ export const api = {
          const error = await response.json().catch(() => ({ message: 'Failed to delete user' }));
          throw new Error(error.message || 'Failed to delete user');
       }
+   },
+
+   // Update user profile
+   async updateUser(userId: number, data: { firstName?: string; lastName?: string; email?: string }): Promise<User> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/users/${userId}`, {
+         method: 'PATCH',
+         body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Ažuriranje profila nije uspjelo' }));
+         throw new Error(error.message || 'Ažuriranje profila nije uspjelo');
+      }
+
+      return response.json();
+   },
+
+   // Change password
+   async changePassword(data: { oldPassword: string; newPassword: string }): Promise<{ message: string }> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/users/change-password`, {
+         method: 'PATCH',
+         body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Promjena lozinke nije uspjela' }));
+         throw new Error(error.message || 'Promjena lozinke nije uspjela');
+      }
+
+      return response.json();
    },
 
    // Request verification for a restaurant (restaurant owner only)

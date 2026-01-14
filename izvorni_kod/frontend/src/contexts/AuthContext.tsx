@@ -19,6 +19,7 @@ type AuthContextType = {
    googleAuth: (data: GoogleAuthData) => Promise<User | null>;
    logout: () => Promise<void>;
    refreshAccessToken: () => Promise<boolean>;
+   updateUser: (data: { firstName?: string; lastName?: string; email?: string }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -205,6 +206,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
    };
 
+   const updateUser = async (data: { firstName?: string; lastName?: string; email?: string }): Promise<void> => {
+      if (!user) throw new Error('Korisnik nije prijavljen');
+
+      const updatedUser = await api.updateUser(user.id, data);
+      setUser({
+         id: updatedUser.id,
+         firstName: updatedUser.firstName || '',
+         lastName: updatedUser.lastName || '',
+         email: updatedUser.email,
+         role: updatedUser.role,
+         name: updatedUser.firstName && updatedUser.lastName
+            ? `${updatedUser.firstName} ${updatedUser.lastName}`
+            : updatedUser.email || '',
+      });
+   };
+
    useEffect(() => {
       const initAuth = async () => {
          await loadUserFromToken();
@@ -223,6 +240,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
          googleAuth,
          logout,
          refreshAccessToken,
+         updateUser,
       }}>
          {children}
       </AuthContext.Provider>
