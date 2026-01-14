@@ -279,6 +279,7 @@ export default function Profile() {
                   required
                 />
               </div>
+
               {passwordError && <div className="error-message">{passwordError}</div>}
               {passwordSuccess && <div className="success-message">{passwordSuccess}</div>}
               <div className="modal-actions">
