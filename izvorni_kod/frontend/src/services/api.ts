@@ -1029,4 +1029,88 @@ export const api = {
 
       return response.json();
    },
+
+   // === NOTIFICATIONS ===
+
+   // Get all notifications for the current user
+   async getNotifications(): Promise<any[]> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/notifications`, {
+         method: 'GET',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to fetch notifications' }));
+         throw new Error(error.message || 'Failed to fetch notifications');
+      }
+
+      return response.json();
+   },
+
+   // Get unread notifications for the current user
+   async getUnreadNotifications(): Promise<any[]> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/notifications/unread`, {
+         method: 'GET',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to fetch unread notifications' }));
+         throw new Error(error.message || 'Failed to fetch unread notifications');
+      }
+
+      return response.json();
+   },
+
+   // Get unread notification count
+   async getUnreadNotificationCount(): Promise<{ count: number }> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/notifications/unread/count`, {
+         method: 'GET',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to fetch notification count' }));
+         throw new Error(error.message || 'Failed to fetch notification count');
+      }
+
+      return response.json();
+   },
+
+   // Mark a single notification as read
+   async markNotificationAsRead(notificationId: string): Promise<any> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/notifications/${notificationId}/read`, {
+         method: 'PATCH',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to mark notification as read' }));
+         throw new Error(error.message || 'Failed to mark notification as read');
+      }
+
+      return response.json();
+   },
+
+   // Mark all notifications as read
+   async markAllNotificationsAsRead(): Promise<any> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/notifications/read-all`, {
+         method: 'PATCH',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to mark all notifications as read' }));
+         throw new Error(error.message || 'Failed to mark all notifications as read');
+      }
+
+      return response.json();
+   },
+
+   // Delete a notification
+   async deleteNotification(notificationId: string): Promise<void> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/notifications/${notificationId}`, {
+         method: 'DELETE',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to delete notification' }));
+         throw new Error(error.message || 'Failed to delete notification');
+      }
+   },
 };

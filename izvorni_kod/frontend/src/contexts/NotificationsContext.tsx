@@ -1,28 +1,28 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { useAuthContext } from './AuthContext';
+import { api } from '../services/api';
 
 export type Notification = {
-   id: number;
+   id: string;
    title: string;
    message: string;
-   timestamp: string;
+   sentAt: string;
    read: boolean;
    type: 'event' | 'promotion' | 'favorite' | 'general';
+   eventId?: string;
 }
 
 type NotificationsContextType = {
    notifications: Notification[];
    unreadCount: number;
    loading: boolean;
-   markAsRead: (notificationId: number) => Promise<void>;
+   markAsRead: (notificationId: string) => Promise<void>;
    markAllAsRead: () => Promise<void>;
    fetchNotifications: () => Promise<void>;
+   deleteNotification: (notificationId: string) => Promise<void>;
 }
 
 const NotificationsContext = createContext<NotificationsContextType | undefined>(undefined);
-
-// TEMPORARY: Mock notifications for development
-const MOCK_NOTIFICATIONS = true;
 
 export function NotificationsProvider({ children }: { children: ReactNode }) {
    const { isAuthenticated } = useAuthContext();
@@ -41,71 +41,28 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
    const fetchNotifications = async () => {
       setLoading(true);
 
-      // TEMPORARY: Mock notifications for development
-      if (MOCK_NOTIFICATIONS) {
-         setTimeout(() => {
-            setNotifications([
-               {
-                  id: 1,
-                  title: 'Nova promocija',
-                  message: 'Bistro Šalša ima 20% popust ovaj vikend!',
-                  timestamp: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
-                  read: false,
-                  type: 'promotion'
-               },
-               {
-                  id: 2,
-                  title: 'Novi događaj',
-                  message: 'Pizzeria Napoli organizira talijanski večer sutra u 19h',
-                  timestamp: new Date(Date.now() - 7200000).toISOString(), // 2 hours ago
-                  read: false,
-                  type: 'event'
-               },
-               {
-                  id: 3,
-                  title: 'Omiljeni restoran',
-                  message: 'Sushi World je ažurirao svoj jelovnik!',
-                  timestamp: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-                  read: true,
-                  type: 'favorite'
-               }
-            ]);
-            setLoading(false);
-         }, 300);
-         return;
-      }
-
       try {
-         const response = await fetch('http://localhost:3000/api/notifications', {
-            credentials: 'include',
-         });
-
-         if (response.ok) {
-            const data = await response.json();
-            setNotifications(data);
-         }
+         const data = await api.getNotifications();
+         setNotifications(data.map((n: any) => ({
+            id: n.id,
+            title: n.title,
+            message: n.message,
+            sentAt: n.sentAt,
+            read: n.read,
+            type: n.type,
+            eventId: n.eventId,
+         })));
       } catch (error) {
          console.error('Failed to fetch notifications:', error);
+         setNotifications([]);
       } finally {
          setLoading(false);
       }
    };
 
-   const markAsRead = async (notificationId: number) => {
-      // TEMPORARY: Mock marking as read
-      if (MOCK_NOTIFICATIONS) {
-         setNotifications(prev =>
-            prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
-         );
-         return;
-      }
-
+   const markAsRead = async (notificationId: string) => {
       try {
-         await fetch(`http://localhost:3000/api/notifications/${notificationId}/read`, {
-            method: 'PATCH',
-            credentials: 'include',
-         });
-
+         await api.markNotificationAsRead(notificationId);
          setNotifications(prev =>
             prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
          );
@@ -115,21 +72,20 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
    };
 
    const markAllAsRead = async () => {
-      // TEMPORARY: Mock marking all as read
-      if (MOCK_NOTIFICATIONS) {
-         setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-         return;
-      }
-
       try {
-         await fetch('http://localhost:3000/api/notifications/read-all', {
-            method: 'PATCH',
-            credentials: 'include',
-         });
-
+         await api.markAllNotificationsAsRead();
          setNotifications(prev => prev.map(n => ({ ...n, read: true })));
       } catch (error) {
          console.error('Failed to mark all notifications as read:', error);
+      }
+   };
+
+   const deleteNotification = async (notificationId: string) => {
+      try {
+         await api.deleteNotification(notificationId);
+         setNotifications(prev => prev.filter(n => n.id !== notificationId));
+      } catch (error) {
+         console.error('Failed to delete notification:', error);
       }
    };
 
@@ -142,7 +98,8 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
          loading,
          markAsRead,
          markAllAsRead,
-         fetchNotifications
+         fetchNotifications,
+         deleteNotification,
       }}>
          {children}
       </NotificationsContext.Provider>
