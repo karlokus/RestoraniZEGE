@@ -14,6 +14,7 @@ import { UsersService } from './providers/users.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { ChangeRoleDto } from './dtos/change-role.dto';
+import { ChangePasswordDto } from './dtos/change-password.dto';
 
 import { AuthType } from 'src/auth/enums/auth-type.enum';
 import { Auth } from 'src/auth/decorators/auth.decorator';
@@ -45,6 +46,21 @@ export class UsersController {
     @ApiResponse({ status: 403, description: 'Zabranjen pristup - niste admin' })
     public getAllUsers() {
         return this.UsersService.getAllUsers();
+    }
+
+    @Patch('change-password')
+    @ApiBearerAuth('access-token')
+    @ApiOperation({ summary: 'Promjena lozinke trenutno prijavljenog korisnika' })
+    @ApiResponse({ status: 200, description: 'Lozinka uspješno promijenjena' })
+    @ApiResponse({ status: 400, description: 'Korisnik nema postavljenu lozinku (Google login)' })
+    @ApiResponse({ status: 401, description: 'Trenutna lozinka nije ispravna' })
+    @ApiResponse({ status: 404, description: 'Korisnik nije pronađen' })
+    public changePassword(
+        @Body() changePasswordDto: ChangePasswordDto,
+        @Req() request,
+    ) {
+        const currentUserId = request[REQUEST_USER_KEY].sub;
+        return this.UsersService.changePassword(currentUserId, changePasswordDto);
     }
 
     @Get(':id')
