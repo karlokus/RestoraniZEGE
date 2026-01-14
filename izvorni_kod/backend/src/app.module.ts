@@ -8,6 +8,7 @@ import { UsersModule } from './users/users.module';
 import { RestaurantsModule } from './restaurants/restaurants.module';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
+import mailerConfig from './config/mailer.config';
 import environmentValidation from './config/environment.validation';
 import { JwtModule } from '@nestjs/jwt';
 import jwtConfig from './auth/config/jwt.config';
@@ -24,6 +25,7 @@ import { RatingsModule } from './ratings/ratings.module';
 import { RestaurantPhotosModule } from './restaurant-photos/restaurant-photos.module';
 import { VerificationRequestsModule } from './verification/verification.module';
 import { AdminModule } from './admin/admin.module';
+import { MailerModule } from './mailer/mailer.module';
 
 const ENV = process.env.NODE_ENV;
 
@@ -39,10 +41,11 @@ const ENV = process.env.NODE_ENV;
     RestaurantPhotosModule,
     VerificationRequestsModule,
     AuthModule,
+    MailerModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: !ENV ? '.env' : `.env.${ENV}`,
-      load: [appConfig, databaseConfig],
+      load: [appConfig, databaseConfig, mailerConfig],
       validationSchema: environmentValidation,
     }),
     TypeOrmModule.forRootAsync({

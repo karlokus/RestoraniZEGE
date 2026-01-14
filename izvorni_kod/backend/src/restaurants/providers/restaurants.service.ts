@@ -9,6 +9,7 @@ import { SearchRestaurantsDto } from "../dtos/search-restaurants.dto";
 import { Restaurant } from "../entities/restaurant.entity";
 import { FindRestaurantProvider } from "./find-restaurant.provider";
 import { RatingsService } from "src/ratings/providers/ratings.service";
+import { GeocodeProvider } from "./geocode.provider";
 
 @Injectable()
 export class RestaurantsService {
@@ -18,6 +19,8 @@ export class RestaurantsService {
         private restaurantsRepository: Repository<Restaurant>,
 
         private readonly findRestaurantProvider: FindRestaurantProvider,
+
+        private readonly geocodeProvider: GeocodeProvider,
 
         @Inject(forwardRef(() => RatingsService))
         private readonly ratingsService: RatingsService,
@@ -61,10 +64,22 @@ export class RestaurantsService {
             throw new BadRequestException('Restaurant already exists, please check your email.');
         }
 
+        let coordinates;
+        if(createRestaurantDto.adress && createRestaurantDto.city) {
+            coordinates = await this.geocodeProvider.geocode(createRestaurantDto.adress, createRestaurantDto.city);
+        }
+
+        if(!coordinates) {
+            throw new Error('Adresa nije pronađena, upišite ispravnu adresu');
+        } else {
+            createRestaurantDto.longitude = coordinates.longitude;
+            createRestaurantDto.latitude = coordinates.latitude;
+        }
+
         /* kreiraj restoran sa vlasnikom (trenutno prijavljeni korisnik) */
         const newRestaurant = this.restaurantsRepository.create({
             ...createRestaurantDto,
-            user: { id: userId }, // Poveži restoran sa korisnikom
+            user: { id: userId },
         });
 
         /* kreiraj Restauranta */
@@ -75,8 +90,18 @@ export class RestaurantsService {
             if (error instanceof Error && 'detail' in error) {
                 const detail = (error as { detail: string }).detail;
                 if (detail.includes('email')) {
-                    throw new ConflictException('Email must be unique');
+                    throw new ConflictException('Email već postoji u bazi');
                 }
+                if (detail.includes('phone')) {
+                    throw new ConflictException('Telefonski broj već postoji u bazi');
+                }
+                if (detail.includes('website')) {
+                    throw new ConflictException('Website već postoji u bazi');
+                }
+            }
+            // Ako je duplicate key error za ID (primarni ključ)
+            if (errMessage.includes('duplicate key') && errMessage.includes('PK_')) {
+                throw new ConflictException('ID restorana već postoji. Molimo pokušajte ponovno.');
             }
             throw new RequestTimeoutException(
                 'Unable to process your request at the moment, please try later',
@@ -107,6 +132,19 @@ export class RestaurantsService {
         if (!restaurant) {
             throw new BadRequestException('Restaurant does not exist');
         }
+
+        let coordinates;
+        if(updateRestaurantDto.adress && updateRestaurantDto.city) {
+            coordinates = await this.geocodeProvider.geocode(updateRestaurantDto.adress, updateRestaurantDto.city);
+        }
+
+        if(!coordinates) {
+            throw new Error('Adresa nije pronađena, upišite ispravnu adresu');
+        } else {
+            updateRestaurantDto.longitude = coordinates.longitude;
+            updateRestaurantDto.latitude = coordinates.latitude;
+        }
+
 
         Object.assign(restaurant, updateRestaurantDto);
 

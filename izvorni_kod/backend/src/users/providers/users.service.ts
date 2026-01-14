@@ -1,9 +1,10 @@
-import { BadRequestException, ConflictException, forwardRef, Inject, Injectable, NotFoundException, RequestTimeoutException } from "@nestjs/common";
+import { BadRequestException, ConflictException, forwardRef, Inject, Injectable, NotFoundException, RequestTimeoutException, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
 import { CreateUserDto } from "../dtos/create-user.dto";
 import { UpdateUserDto } from "../dtos/update-user.dto";
+import { ChangePasswordDto } from "../dtos/change-password.dto";
 
 import { User } from "../entities/user.entity";
 import { FindUserProvider } from "./find-user.provider";
@@ -11,6 +12,7 @@ import { AuthService } from "src/auth/providers/auth.service";
 import { CreateUserProvider } from "./create-user.provider";
 import { UpdateUserProvider } from "./update-user.provider";
 import { UserRole } from "../enums/userRole.enum";
+import { HashingProvider } from "src/auth/providers/hashing.provider";
 
 @Injectable()
 export class UsersService {
@@ -24,6 +26,8 @@ export class UsersService {
         private readonly createUserProvider: CreateUserProvider,
 
         private readonly updateUserProvider: UpdateUserProvider,
+
+        private readonly hashingProvider: HashingProvider,
     ) {}
 
     public async getAllUsers() {
@@ -106,5 +110,35 @@ export class UsersService {
      */
     public async count(): Promise<number> {
         return await this.usersRepository.count();
+    }
+
+    /**
+     * Promjena lozinke korisnika
+     */
+    public async changePassword(userId: number, changePasswordDto: ChangePasswordDto): Promise<{ message: string }> {
+        const user = await this.findUserProvider.findOneById(userId);
+
+        if (!user) {
+            throw new NotFoundException('Korisnik nije pronađen');
+        }
+
+        if (!user.password) {
+            throw new BadRequestException('Korisnik nema postavljenu lozinku (registriran putem Google-a)');
+        }
+
+        const isPasswordValid = await this.hashingProvider.comparePassword(
+            changePasswordDto.oldPassword,
+            user.password,
+        );
+
+        if (!isPasswordValid) {
+            throw new UnauthorizedException('Trenutna lozinka nije ispravna');
+        }
+
+        const hashedNewPassword = await this.hashingProvider.hashPassword(changePasswordDto.newPassword);
+
+        await this.usersRepository.update(userId, { password: hashedNewPassword });
+
+        return { message: 'Lozinka uspješno promijenjena' };
     }
 }
