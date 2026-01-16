@@ -11,8 +11,9 @@ export class FindRestaurantProvider {
     ) {}
 
     public async findOneById(id: number) {
-        return await this.RestaurantsRepository.findOneBy({
-            id: id,
+        return await this.RestaurantsRepository.findOne({
+            where: { id },
+            relations: ['user'],
         });
     }
 

@@ -35,8 +35,15 @@ function Login() {
     }
 
     try {
-      await login({ email, password });
-      navigate("/");
+      const userData = await login({ email, password });
+      // Redirect based on user role
+      if (userData?.role === "admin") {
+        navigate("/admin");
+      } else if (userData?.role === "restaurant") {
+        navigate("/dashboard");
+      } else {
+        navigate("/");
+      }
     } catch (err: any) {
       setError(err.message || "Prijava nije uspjela. Provjerite podatke.");
     } finally {
@@ -48,8 +55,15 @@ function Login() {
     setError("");
     setGoogleLoading(true);
     try {
-      await googleAuth({ token: credential });
-      navigate("/");
+      const userData = await googleAuth({ token: credential });
+      // Redirect based on user role
+      if (userData?.role === "admin") {
+        navigate("/admin");
+      } else if (userData?.role === "restaurant") {
+        navigate("/dashboard");
+      } else {
+        navigate("/");
+      }
     } catch (err: any) {
       setError(err.message || "Google prijava nije uspjela. Pokušajte ponovno.");
     } finally {
@@ -160,6 +174,7 @@ function Login() {
 
         <div className="links">
           <Link className="muted" to="/register">Nemate račun? Registrirajte se</Link>
+          <Link className="muted" to="/register-restaurant">Vlasnik ste restorana? Registrirajte restoran</Link>
           <a className="muted" href="#">Zaboravili ste lozinku?</a>
         </div>
       </div>

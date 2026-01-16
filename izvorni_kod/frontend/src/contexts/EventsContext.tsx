@@ -1,12 +1,12 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { API_BASE_URL, API_ENDPOINTS } from '../config/api.config';
 
 export type Event = {
-   id: number;
+   id: string;
    restaurantId: number;
    title: string;
    description: string;
-   startDate: string;
-   endDate: string;
+   eventDate: string;
    imageUrl?: string;
    restaurantName?: string;
 }
@@ -36,19 +36,23 @@ export function EventsProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       setError(null);
       try {
-         const response = await fetch('http://localhost:3000/api/events', {
-            credentials: 'include',
-         });
+         const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.EVENTS}`);
 
          if (response.ok) {
             const data = await response.json();
-            setEvents(data);
+            // Mapiraj događaje i dodaj ime restorana
+            const mappedEvents = data.map((event: any) => ({
+               ...event,
+               restaurantName: event.restaurant?.name || 'Nepoznat restoran',
+            }));
+            setEvents(mappedEvents);
          } else {
             setError('Failed to load events');
+            setEvents([]); // Postavi praznu listu umjesto error-a
          }
       } catch (err) {
-         console.error('Failed to fetch events:', err);
-         setError('Failed to load events');
+         // Ne postavljaj error nego praznu listu da aplikacija može nastaviti raditi
+         setEvents([]);
       } finally {
          setLoading(false);
       }
@@ -56,9 +60,7 @@ export function EventsProvider({ children }: { children: ReactNode }) {
 
    const fetchEventsByRestaurant = async (restaurantId: number): Promise<Event[]> => {
       try {
-         const response = await fetch(`http://localhost:3000/api/events/restaurant/${restaurantId}`, {
-            credentials: 'include',
-         });
+         const response = await fetch(`${API_BASE_URL}/events?restaurantId=${restaurantId}`);
 
          if (response.ok) {
             const data = await response.json();
@@ -66,15 +68,14 @@ export function EventsProvider({ children }: { children: ReactNode }) {
          }
          return [];
       } catch (err) {
-         console.error('Failed to fetch restaurant events:', err);
          return [];
       }
    };
 
    const getUpcomingEvents = (): Event[] => {
       const now = new Date();
-      return events.filter(event => new Date(event.startDate) > now)
-         .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+      return events.filter(event => new Date(event.eventDate) > now)
+         .sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime());
    };
 
    return (

@@ -14,11 +14,12 @@ type AuthContextType = {
    user: User | null;
    isAuthenticated: boolean;
    loading: boolean;
-   login: (data: SignInData) => Promise<void>;
+   login: (data: SignInData) => Promise<User | null>;
    register: (data: RegisterData) => Promise<void>;
-   googleAuth: (data: GoogleAuthData) => Promise<void>;
+   googleAuth: (data: GoogleAuthData) => Promise<User | null>;
    logout: () => Promise<void>;
    refreshAccessToken: () => Promise<boolean>;
+   updateUser: (data: { firstName?: string; lastName?: string; email?: string }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -100,7 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    };
 
 
-   const login = async (data: SignInData): Promise<void> => {
+   const login = async (data: SignInData): Promise<User | null> => {
       try {
          const response = await api.signIn(data);
          storeTokens(response.accessToken, response.refreshToken);
@@ -110,7 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Fetch full user data from backend
             try {
                const userData = await api.getUserById(decoded.sub);
-               setUser({
+               const userObj: User = {
                   id: userData.id,
                   firstName: userData.firstName || '',
                   lastName: userData.lastName || '',
@@ -119,14 +120,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                   name: userData.firstName && userData.lastName
                      ? `${userData.firstName} ${userData.lastName}`
                      : userData.email || '',
-               });
+               };
+               setUser(userObj);
+               return userObj;
             } catch (userError) {
                // If fetching user fails, fall back to token data
                console.warn('Failed to fetch user data, using token data:', userError);
                await loadUserFromToken();
+               return user;
             }
          } else {
             await loadUserFromToken();
+            return user;
          }
       } catch (error: any) {
          throw new Error(error.message || 'Login failed');
@@ -157,7 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
    };
 
-   const googleAuth = async (data: GoogleAuthData): Promise<void> => {
+   const googleAuth = async (data: GoogleAuthData): Promise<User | null> => {
       try {
          const response = await api.googleAuth(data);
          storeTokens(response.accessToken, response.refreshToken);
@@ -168,7 +173,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Fetch full user data from backend
             try {
                const userData = await api.getUserById(decoded.sub);
-               setUser({
+               const userObj: User = {
                   id: userData.id,
                   firstName: userData.firstName || '',
                   lastName: userData.lastName || '',
@@ -177,14 +182,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                   name: userData.firstName && userData.lastName
                      ? `${userData.firstName} ${userData.lastName}`
                      : userData.email || '',
-               });
+               };
+               setUser(userObj);
+               return userObj;
             } catch (userError) {
                // If fetching user fails, fall back to token data
                console.warn('Failed to fetch user data, using token data:', userError);
                await loadUserFromToken();
+               return user;
             }
          } else {
             await loadUserFromToken();
+            return user;
          }
       } catch (error: any) {
          throw new Error(error.message || 'Google authentication failed');
@@ -195,6 +204,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    const logout = async (): Promise<void> => {
       clearTokens();
       setUser(null);
+   };
+
+   const updateUser = async (data: { firstName?: string; lastName?: string; email?: string }): Promise<void> => {
+      if (!user) throw new Error('Korisnik nije prijavljen');
+
+      const updatedUser = await api.updateUser(user.id, data);
+      setUser({
+         id: updatedUser.id,
+         firstName: updatedUser.firstName || '',
+         lastName: updatedUser.lastName || '',
+         email: updatedUser.email,
+         role: updatedUser.role,
+         name: updatedUser.firstName && updatedUser.lastName
+            ? `${updatedUser.firstName} ${updatedUser.lastName}`
+            : updatedUser.email || '',
+      });
    };
 
    useEffect(() => {
@@ -215,6 +240,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
          googleAuth,
          logout,
          refreshAccessToken,
+         updateUser,
       }}>
          {children}
       </AuthContext.Provider>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuthContext } from "../contexts/AuthContext";
 import "../css/Register.css";
 
@@ -149,6 +149,12 @@ function Register() {
 
         <div className="google-button-container" ref={googleButtonRef}></div>
 
+        <p className="switch-text">
+          Već imate račun? <Link to="/login">Prijavite se</Link>
+        </p>
+        <p className="switch-text">
+          Vlasnik ste restorana? <Link to="/register-restaurant">Registrirajte svoj restoran</Link>
+        </p>
       </div>
     </div>
   );
