@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { Link } from "react-router-dom";
 import { useAuthContext } from "../contexts/AuthContext";
 import { useFavoritesContext } from "../contexts/FavoritesContext";
 import { useEventsContext } from "../contexts/EventsContext";
@@ -102,6 +103,13 @@ function Home() {
                </div>
 
                <div className="header-right">
+                  {isAuthenticated && user?.role === "restaurant" ? (
+                     <Link className="dashboard-link" to="/dashboard" title="Dashboard">
+                        📊
+                     </Link>
+                  ) : null
+                  }
+
                   {isAuthenticated ? (
                      <>
                         <div
@@ -164,12 +172,12 @@ function Home() {
                            onMouseEnter={handleMouseEnter}
                            onMouseLeave={handleMouseLeave}
                         >
-                           <a className="user-chip" href="/profile">
+                           <Link className="user-chip" to="/profile">
                               {inicijali && (
                                  <span className="initials-badge" aria-hidden="true">{inicijali}</span>
                               )}
                               <span className="user-name">{user?.name || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.email}</span>
-                           </a>
+                           </Link>
                            {showDropdown && (
                               <div
                                  className="dropdown-content"
@@ -186,7 +194,7 @@ function Home() {
                   ) : (
                      <>
                         {/* za neprijavljenog prikazuj samo gumb/link za login */}
-                        <a className="login-button" href="/login">Prijavi se</a>
+                        <Link className="login-button" to="/login">Prijavi se</Link>
                      </>
                   )}
                </div>
@@ -201,7 +209,6 @@ function Home() {
                      value={filters.searchQuery}
                      onChange={(e) => setSearchQuery(e.target.value)}
                   />
-                  <button type="submit" className="search-button">Search</button>
                </form>
                <a className="filters" href="/filter">Filtri</a>
             </div>
@@ -258,7 +265,7 @@ function Home() {
                                  </div>
                               ) : (
                                  getUpcomingEvents()
-                                    .filter(event => 
+                                    .filter(event =>
                                        event.title.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
                                        event.restaurantName?.toLowerCase().includes(filters.searchQuery.toLowerCase())
                                     )

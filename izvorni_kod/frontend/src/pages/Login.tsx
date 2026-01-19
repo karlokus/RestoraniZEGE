@@ -175,7 +175,6 @@ function Login() {
         <div className="links">
           <Link className="muted" to="/register">Nemate račun? Registrirajte se</Link>
           <Link className="muted" to="/register-restaurant">Vlasnik ste restorana? Registrirajte restoran</Link>
-          <a className="muted" href="#">Zaboravili ste lozinku?</a>
         </div>
       </div>
     </div>
