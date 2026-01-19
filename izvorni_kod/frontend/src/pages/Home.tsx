@@ -7,6 +7,7 @@ import { useNotificationsContext } from "../contexts/NotificationsContext";
 import { useRestaurantsContext } from "../contexts/RestaurantsContext";
 import RestaurantCard, { type Restaurant } from "../components/RestaurantCard";
 import EventCard from "../components/EventCard";
+import Pagination from "../components/Pagination";
 import "../css/Home.css"
 import chefImg from "../assets/chef.png";
 
@@ -15,7 +16,17 @@ function Home() {
    const { isFavorite } = useFavoritesContext();
    const { getUpcomingEvents } = useEventsContext();
    const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotificationsContext();
-   const { restaurants, loading, error, filters, setSearchQuery } = useRestaurantsContext();
+   const { 
+      restaurants, 
+      loading, 
+      error, 
+      filters, 
+      setSearchQuery,
+      pagination,
+      currentPage,
+      setCurrentPage,
+      itemsPerPage
+   } = useRestaurantsContext();
 
    const [activeFilter, setActiveFilter] = useState<'all' | 'favorites' | 'events'>('all');
    const [showDropdown, setShowDropdown] = useState(false);
@@ -274,35 +285,56 @@ function Home() {
                                     ))
                               )}
                            </div>
-                        ) : (
+                        ) : activeFilter === 'favorites' ? (
                            <div className="restaurant-grid">
                               {restaurants
-                                 .filter((restaurant: Restaurant) => {
-                                    const matchesSearch = restaurant.name.toLowerCase().includes(filters.searchQuery.toLowerCase());
-                                    if (activeFilter === 'favorites') {
-                                       return matchesSearch && isFavorite(restaurant.id);
-                                    }
-                                    return matchesSearch;
-                                 })
+                                 .filter((restaurant: Restaurant) => isFavorite(restaurant.id))
                                  .map((restaurant: Restaurant) => (
                                     <RestaurantCard key={restaurant.id} restaurant={restaurant} />
                                  ))
                               }
+                              {restaurants.filter((restaurant: Restaurant) => isFavorite(restaurant.id)).length === 0 && (
+                                 <div style={{ padding: '2rem', textAlign: 'center', gridColumn: '1 / -1' }}>
+                                    <p style={{ fontSize: '18px', color: '#666' }}>Nemate omiljenih restorana.</p>
+                                 </div>
+                              )}
                            </div>
+                        ) : (
+                           <>
+                              <div className="restaurant-grid">
+                                 {restaurants.map((restaurant: Restaurant) => (
+                                    <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+                                 ))}
+                              </div>
+                              {pagination.totalPages > 1 && (
+                                 <Pagination
+                                    currentPage={currentPage}
+                                    totalPages={pagination.totalPages}
+                                    onPageChange={setCurrentPage}
+                                    totalItems={pagination.total}
+                                    itemsPerPage={itemsPerPage}
+                                 />
+                              )}
+                           </>
                         )}
                      </>
                   ) : (
                      <>
                         <h2>Istaknuti restorani</h2>
                         <div className="restaurant-grid">
-                           {restaurants
-                              .filter((restaurant: Restaurant) =>
-                                 restaurant.name.toLowerCase().includes(filters.searchQuery.toLowerCase())
-                              )
-                              .map((restaurant: Restaurant) => (
-                                 <RestaurantCard key={restaurant.id} restaurant={restaurant} />
-                              ))}
+                           {restaurants.map((restaurant: Restaurant) => (
+                              <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+                           ))}
                         </div>
+                        {pagination.totalPages > 1 && (
+                           <Pagination
+                              currentPage={currentPage}
+                              totalPages={pagination.totalPages}
+                              onPageChange={setCurrentPage}
+                              totalItems={pagination.total}
+                              itemsPerPage={itemsPerPage}
+                           />
+                        )}
                      </>
                   )}
                </>

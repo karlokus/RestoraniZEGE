@@ -72,7 +72,7 @@ export interface SearchRestaurantsParams {
    page?: number;
    limit?: number;
    sortBy?: string;
-   order?: 'ASC' | 'DESC';
+   sortOrder?: 'ASC' | 'DESC';
 }
 
 export interface SearchRestaurantsResponse {
@@ -450,7 +450,7 @@ export const api = {
       if (params.page) queryParams.append('page', params.page.toString());
       if (params.limit) queryParams.append('limit', params.limit.toString());
       if (params.sortBy) queryParams.append('sortBy', params.sortBy);
-      if (params.order) queryParams.append('order', params.order);
+      if (params.sortOrder) queryParams.append('sortOrder', params.sortOrder);
 
       const url = `${API_BASE_URL}${API_ENDPOINTS.RESTAURANTS_SEARCH}?${queryParams.toString()}`;
       const response = await fetch(url, {

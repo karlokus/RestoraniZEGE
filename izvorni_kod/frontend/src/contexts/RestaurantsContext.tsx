@@ -13,12 +13,27 @@ interface Filters {
    sortBy: SortOption;
 }
 
+// Pagination podaci
+export interface PaginationMeta {
+   total: number;
+   page: number;
+   limit: number;
+   totalPages: number;
+}
+
 interface RestaurantsContextType {
    // Podaci
    restaurants: Restaurant[];
    filteredRestaurants: Restaurant[];
    loading: boolean;
    error: string | null;
+
+   // Paginacija
+   pagination: PaginationMeta;
+   currentPage: number;
+   setCurrentPage: (page: number) => void;
+   itemsPerPage: number;
+   setItemsPerPage: (limit: number) => void;
 
    // Filteri
    filters: Filters;
@@ -42,6 +57,13 @@ const defaultFilters: Filters = {
    sortBy: "recommended"
 };
 
+const defaultPagination: PaginationMeta = {
+   total: 0,
+   page: 1,
+   limit: 12,
+   totalPages: 0
+};
+
 const RestaurantsContext = createContext<RestaurantsContextType | undefined>(undefined);
 
 export function RestaurantsProvider({ children }: { children: ReactNode }) {
@@ -50,17 +72,49 @@ export function RestaurantsProvider({ children }: { children: ReactNode }) {
    const [loading, setLoading] = useState(true);
    const [error, setError] = useState<string | null>(null);
 
+   // Pagination states
+   const [pagination, setPagination] = useState<PaginationMeta>(defaultPagination);
+   const [currentPage, setCurrentPage] = useState(1);
+   const [itemsPerPage, setItemsPerPage] = useState(12);
+
    // Filter states
    const [filters, setFilters] = useState<Filters>(defaultFilters);
 
-   // Učitaj restorane s backend-a (samo verificirane za javni prikaz)
+   // Učitaj restorane s backend-a koristeći search endpoint s paginacijom
    const loadRestaurants = useCallback(async () => {
       try {
          setLoading(true);
-         const data = await api.getVerifiedRestaurants();
-         // Mapiraj backend podatke na frontend Restaurant tip
-         const mappedRestaurants: Restaurant[] = data.map((r: any) => {
-            // Pronađi primarnu sliku ili prvu sliku iz photos arraya
+         
+         let backendSortBy = 'name';
+         let backendOrder: 'ASC' | 'DESC' = 'ASC';
+         
+         switch (filters.sortBy) {
+            case 'rating':
+            case 'recommended':
+               backendSortBy = 'averageRating';
+               backendOrder = 'DESC';
+               break;
+            case 'name':
+               backendSortBy = 'name';
+               backendOrder = 'ASC';
+               break;
+            default:
+               backendSortBy = 'name';
+         }
+
+         // Koristimo search endpoint za paginaciju
+         const response = await api.searchRestaurants({
+            search: filters.searchQuery || undefined,
+            cuisineType: filters.cuisineType !== 'all' ? filters.cuisineType : undefined,
+            minRating: filters.ratingFilter !== 'all' ? parseFloat(filters.ratingFilter) : undefined,
+            verifiedOnly: true,
+            page: currentPage,
+            limit: itemsPerPage,
+            sortBy: backendSortBy,
+            sortOrder: backendOrder,
+         });
+
+         const mappedRestaurants: Restaurant[] = response.data.map((r: any) => {
             let imageUrl = r.imageUrl || '';
             if (r.photos && Array.isArray(r.photos) && r.photos.length > 0) {
                const primaryPhoto = r.photos.find((p: any) => p.isPrimary);
@@ -79,75 +133,30 @@ export function RestaurantsProvider({ children }: { children: ReactNode }) {
                longitude: r.longitude,
             };
          });
+         
          setRestaurants(mappedRestaurants);
+         setFilteredRestaurants(mappedRestaurants);
+         setPagination(response.meta);
          setError(null);
       } catch (err: any) {
          console.error('Failed to load restaurants:', err);
          setError("Neuspješno učitavanje restorana. Pokušajte ponovno.");
          setRestaurants([]);
+         setFilteredRestaurants([]);
       } finally {
          setLoading(false);
       }
-   }, []);
+   }, [currentPage, itemsPerPage, filters.searchQuery, filters.cuisineType, filters.ratingFilter, filters.sortBy]);
 
-   // Učitaj restorane prilikom prvog renderiranja
+   // Učitaj restorane prilikom prvog renderiranja ili kad se promijene filteri/paginacija
    useEffect(() => {
       loadRestaurants();
    }, [loadRestaurants]);
 
-   // Filtriraj i sortiraj restorane kad se promijene filteri ili restorani
-   useEffect(() => {
-      let result = [...restaurants];
-
-      // Pretraživanje po imenu, kuhinji ili lokaciji
-      if (filters.searchQuery.trim()) {
-         const query = filters.searchQuery.toLowerCase();
-         result = result.filter(r =>
-            r.name.toLowerCase().includes(query) ||
-            r.cuisine.toLowerCase().includes(query) ||
-            r.location.toLowerCase().includes(query)
-         );
-      }
-
-      // Filter po vrsti kuhinje
-      if (filters.cuisineType !== "all") {
-         result = result.filter(r => r.cuisine === filters.cuisineType);
-      }
-
-      // Filter po minimalnoj ocjeni
-      if (filters.ratingFilter !== "all") {
-         const minRating = parseFloat(filters.ratingFilter);
-         result = result.filter(r => r.rating >= minRating);
-      }
-
-      // Filter po maksimalnoj cijeni
-      if (filters.priceFilter !== null) {
-         result = result.filter(r => r.priceLevel <= filters.priceFilter!);
-      }
-
-      // Sortiranje
-      switch (filters.sortBy) {
-         case "rating":
-            result.sort((a, b) => b.rating - a.rating);
-            break;
-         case "priceAsc":
-            result.sort((a, b) => a.priceLevel - b.priceLevel);
-            break;
-         case "priceDesc":
-            result.sort((a, b) => b.priceLevel - a.priceLevel);
-            break;
-         case "name":
-            result.sort((a, b) => a.name.localeCompare(b.name));
-            break;
-         case "recommended":
-         default:
-            // Preporučeno - sortiranje po ocjeni
-            result.sort((a, b) => b.rating - a.rating);
-            break;
-      }
-
-      setFilteredRestaurants(result);
-   }, [restaurants, filters]);
+   // Kad se promijene filteri, resetiraj na prvu stranicu
+   const handleFilterChange = useCallback(() => {
+      setCurrentPage(1);
+   }, []);
 
    // Dohvati sve jedinstvene tipove kuhinje
    const cuisineTypes = Array.from(new Set(restaurants.map(r => r.cuisine).filter(Boolean)));
@@ -155,26 +164,41 @@ export function RestaurantsProvider({ children }: { children: ReactNode }) {
    // Setter funkcije za pojedinačne filtere
    const setSearchQuery = useCallback((query: string) => {
       setFilters(prev => ({ ...prev, searchQuery: query }));
-   }, []);
+      handleFilterChange();
+   }, [handleFilterChange]);
 
    const setCuisineType = useCallback((type: string) => {
       setFilters(prev => ({ ...prev, cuisineType: type }));
-   }, []);
+      handleFilterChange();
+   }, [handleFilterChange]);
 
    const setRatingFilter = useCallback((rating: string) => {
       setFilters(prev => ({ ...prev, ratingFilter: rating }));
-   }, []);
+      handleFilterChange();
+   }, [handleFilterChange]);
 
    const setPriceFilter = useCallback((price: number | null) => {
       setFilters(prev => ({ ...prev, priceFilter: price }));
-   }, []);
+      handleFilterChange();
+   }, [handleFilterChange]);
 
    const setSortBy = useCallback((sort: SortOption) => {
       setFilters(prev => ({ ...prev, sortBy: sort }));
-   }, []);
+      handleFilterChange();
+   }, [handleFilterChange]);
 
    const resetFilters = useCallback(() => {
       setFilters(defaultFilters);
+      setCurrentPage(1);
+   }, []);
+
+   const handleSetCurrentPage = useCallback((page: number) => {
+      setCurrentPage(page);
+   }, []);
+
+   const handleSetItemsPerPage = useCallback((limit: number) => {
+      setItemsPerPage(limit);
+      setCurrentPage(1); // Resetiraj na prvu stranicu kad se promijeni broj stavki po stranici
    }, []);
 
    const value: RestaurantsContextType = {
@@ -182,6 +206,11 @@ export function RestaurantsProvider({ children }: { children: ReactNode }) {
       filteredRestaurants,
       loading,
       error,
+      pagination,
+      currentPage,
+      setCurrentPage: handleSetCurrentPage,
+      itemsPerPage,
+      setItemsPerPage: handleSetItemsPerPage,
       filters,
       setSearchQuery,
       setCuisineType,
