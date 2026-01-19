@@ -195,6 +195,9 @@ export class RestaurantsService {
 
         const query = this.restaurantsRepository.createQueryBuilder('restaurant');
 
+        // Uključi photos relaciju za slike restorana
+        query.leftJoinAndSelect('restaurant.photos', 'photos');
+
         // Search po nazivu
         if (search) {
             query.andWhere('restaurant.name ILIKE :search', { search: `%${search}%` });
