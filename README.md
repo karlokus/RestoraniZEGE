@@ -70,7 +70,18 @@ JWT_ACCESS_TOKEN_TTL=3600
 JWT_REFRESH_TOKEN_TTL=86400
 
 GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=GOCSPX-your_google_client_secret
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+CLOUDINARY_CLOUD_NAME=your_cloudinary_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=restoranizege@gmail.com
+SMTP_PASS=uynv ygnv lxcm alrr
+EMAIL_FROM=RestoraniZEGE <restoranizege@gmail.com>
 ```
 
 #### ▶️ 4. Pokretanje backend servera
