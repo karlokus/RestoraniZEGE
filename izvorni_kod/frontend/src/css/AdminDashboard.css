@@ -416,7 +416,11 @@
   color: #d32f2f;
 }
 
-/* ==================== DETAIL VIEW ==================== */
+.status-badge.pending {
+  background: rgba(255, 152, 0, 0.1);
+  color: #f57c00;
+}
+
 .admin-detail-view h2 {
   font-size: 1.5rem;
   font-weight: 700;
@@ -493,6 +497,34 @@
   font-style: italic;
   color: var(--muted);
   line-height: 1.6;
+}
+
+/* ==================== ROLE SELECT ==================== */
+.role-control {
+  display: inline-flex;
+}
+
+.role-select {
+  padding: 0.5rem 1rem;
+  border: 1px solid rgba(200, 180, 150, 0.3);
+  border-radius: 8px;
+  background-color: #fff;
+  color: var(--accent-dark);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 150px;
+}
+
+.role-select:hover {
+  border-color: var(--accent);
+}
+
+.role-select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(212, 165, 99, 0.15);
 }
 
 /* ==================== ACTION BUTTONS ==================== */

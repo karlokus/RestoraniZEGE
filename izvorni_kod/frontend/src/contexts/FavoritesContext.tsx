@@ -2,12 +2,16 @@ import { createContext, useContext, useState, useEffect, type ReactNode } from '
 import { useAuthContext } from './AuthContext';
 import { API_BASE_URL, API_ENDPOINTS } from '../config/api.config';
 import { getStoredTokens } from '../services/api';
+import type { Restaurant } from '../components/RestaurantCard';
 
 type FavoritesContextType = {
    favorites: number[];
+   favoriteRestaurants: Restaurant[];
    loading: boolean;
+   loadingRestaurants: boolean;
    toggleFavorite: (restaurantId: number) => Promise<void>;
    isFavorite: (restaurantId: number) => boolean;
+   loadFavoriteRestaurants: () => Promise<void>;
 }
 
 const FavoritesContext = createContext<FavoritesContextType | undefined>(undefined);
@@ -15,7 +19,9 @@ const FavoritesContext = createContext<FavoritesContextType | undefined>(undefin
 export function FavoritesProvider({ children }: { children: ReactNode }) {
    const { isAuthenticated, refreshAccessToken } = useAuthContext();
    const [favorites, setFavorites] = useState<number[]>([]);
+   const [favoriteRestaurants, setFavoriteRestaurants] = useState<Restaurant[]>([]);
    const [loading, setLoading] = useState(true);
+   const [loadingRestaurants, setLoadingRestaurants] = useState(false);
 
    // Load favorites when user is authenticated
    useEffect(() => {
@@ -23,6 +29,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
          loadFavorites();
       } else {
          setFavorites([]);
+         setFavoriteRestaurants([]);
          setLoading(false);
       }
    }, [isAuthenticated]);
@@ -146,12 +153,102 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
       return favorites.includes(restaurantId);
    };
 
+   // Funkcija za dohvaćanje svih favorita restorana s potpunim podacima
+   const loadFavoriteRestaurants = async () => {
+      if (favorites.length === 0) {
+         setFavoriteRestaurants([]);
+         return;
+      }
+
+      try {
+         setLoadingRestaurants(true);
+         const { accessToken } = getStoredTokens();
+
+         if (!accessToken) {
+            console.warn('No access token found');
+            return;
+         }
+
+         // Dohvati detalje za svaki favorit restoran
+         const restaurantPromises = favorites.map(async (restaurantId) => {
+            try {
+               // Dohvati osnovne podatke o restoranu
+               const response = await fetch(`${API_BASE_URL}/restaurants/${restaurantId}`, {
+                  headers: {
+                     'Content-Type': 'application/json',
+                  },
+               });
+
+               if (response.ok) {
+                  const r = await response.json();
+                  
+                  let imageUrl = r.imageUrl || '';
+                  
+                  // Provjeri photos iz osnovnog responsa
+                  if (r.photos && Array.isArray(r.photos) && r.photos.length > 0) {
+                     const primaryPhoto = r.photos.find((p: any) => p.isPrimary);
+                     imageUrl = primaryPhoto?.photoUrl || r.photos[0]?.photoUrl || imageUrl;
+                  }
+                  
+                  // Ako nema slike, dohvati slike zasebno
+                  if (!imageUrl) {
+                     try {
+                        const photosResponse = await fetch(`${API_BASE_URL}/restaurant-photos/restaurant/${restaurantId}`, {
+                           headers: {
+                              'Content-Type': 'application/json',
+                           },
+                        });
+                        
+                        if (photosResponse.ok) {
+                           const photos = await photosResponse.json();
+                           if (Array.isArray(photos) && photos.length > 0) {
+                              const primaryPhoto = photos.find((p: any) => p.isPrimary);
+                              imageUrl = primaryPhoto?.photoUrl || photos[0]?.photoUrl || '';
+                           }
+                        }
+                     } catch (photoErr) {
+                        console.error(`Failed to fetch photos for restaurant ${restaurantId}:`, photoErr);
+                     }
+                  }
+
+                  return {
+                     id: r.id,
+                     name: r.name || '',
+                     cuisine: r.cuisineType || r.cuisine || '',
+                     location: r.adress ? `${r.adress}${r.city ? ', ' + r.city : ''}` : (r.city || r.location || ''),
+                     rating: r.averageRating || r.rating || 0,
+                     priceLevel: r.priceRange || r.priceLevel || 2,
+                     imageUrl: imageUrl,
+                     latitude: r.latitude,
+                     longitude: r.longitude,
+                  } as Restaurant;
+               }
+               return null;
+            } catch (err) {
+               console.error(`Failed to fetch restaurant ${restaurantId}:`, err);
+               return null;
+            }
+         });
+
+         const results = await Promise.all(restaurantPromises);
+         const validRestaurants = results.filter((r): r is Restaurant => r !== null);
+         setFavoriteRestaurants(validRestaurants);
+      } catch (error) {
+         console.error('Failed to load favorite restaurants:', error);
+      } finally {
+         setLoadingRestaurants(false);
+      }
+   };
+
    return (
       <FavoritesContext.Provider value={{
          favorites,
+         favoriteRestaurants,
          loading,
+         loadingRestaurants,
          toggleFavorite,
-         isFavorite
+         isFavorite,
+         loadFavoriteRestaurants
       }}>
          {children}
       </FavoritesContext.Provider>

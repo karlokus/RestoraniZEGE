@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { type Event } from "../contexts/EventsContext";
-import { Link } from "react-router-dom";
+import RestaurantDetail from "./RestaurantDetail";
+import { type Restaurant } from "./RestaurantCard";
 import "../css/EventCard.css";
 
 interface EventCardProps {
@@ -7,6 +9,8 @@ interface EventCardProps {
 }
 
 function EventCard({ event }: EventCardProps) {
+   const [showDetail, setShowDetail] = useState(false);
+
    const formatDate = (dateString: string) => {
       const date = new Date(dateString);
       return new Intl.DateTimeFormat('hr-HR', {
@@ -32,8 +36,31 @@ function EventCard({ event }: EventCardProps) {
 
    const daysLabel = getDaysUntil(event.eventDate);
 
+   const handleCardClick = () => {
+      if (event.restaurantId) {
+         setShowDetail(true);
+      }
+   };
+
+   const restaurantForDetail: Restaurant | null = event.restaurantId ? {
+      id: event.restaurantId,
+      name: event.restaurantName || 'Restoran',
+      cuisine: '',
+      location: '',
+      rating: 0,
+      priceLevel: 1,
+      imageUrl: ''
+   } : null;
+
    return (
-      <div className="event-card">
+      <>
+         <div 
+            className="event-card" 
+            onClick={handleCardClick}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === 'Enter' && handleCardClick()}
+         >
          {event.imageUrl && (
             <div className="event-image">
                <img src={event.imageUrl} alt={event.title} />
@@ -44,26 +71,34 @@ function EventCard({ event }: EventCardProps) {
          )}
          <div className="event-content">
             <h3 className="event-title">{event.title}</h3>
-            {event.restaurantName && (
-               <Link 
-                  to={`/restaurant/${event.restaurantId}`} 
-                  className="event-restaurant-link"
-                  onClick={(e) => e.stopPropagation()}
-               >
-                  <span className="restaurant-icon">🍽️</span>
-                  {event.restaurantName}
-               </Link>
-            )}
-            <p className="event-date">
-               <span className="date-icon">📅</span>
-               {formatDate(event.eventDate)}
-            </p>
+            <div className="event-info">
+               {event.restaurantName && (
+                  <p className="event-restaurant">
+                     <span className="restaurant-icon">🍽️</span>
+                     <span>{event.restaurantName}</span>
+                  </p>
+               )}
+               <p className="event-date">
+                  <span className="date-icon">📅</span>
+                  <span>{formatDate(event.eventDate)}</span>
+               </p>
+            </div>
             {event.description && (
                <p className="event-description">{event.description}</p>
             )}
          </div>
       </div>
+
+      {restaurantForDetail && (
+         <RestaurantDetail
+            restaurant={restaurantForDetail}
+            isOpen={showDetail}
+            onClose={() => setShowDetail(false)}
+         />
+      )}
+   </>
    );
 }
 
 export default EventCard;
+

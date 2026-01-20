@@ -227,6 +227,7 @@ export interface UpdateRestaurantData {
    email?: string;
    website?: string;
    workingHours?: string;
+   verified?: boolean;
 }
 
 
@@ -884,6 +885,21 @@ export const api = {
          const error = await response.json().catch(() => ({ message: 'Failed to delete user' }));
          throw new Error(error.message || 'Failed to delete user');
       }
+   },
+
+   // Change user role (admin only)
+   async changeUserRole(userId: number, role: string): Promise<any> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/users/${userId}/role`, {
+         method: 'PATCH',
+         body: JSON.stringify({ role }),
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to change user role' }));
+         throw new Error(error.message || 'Failed to change user role');
+      }
+
+      return response.json();
    },
 
    // Update user profile

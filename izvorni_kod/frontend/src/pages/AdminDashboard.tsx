@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { api, clearTokens } from "../services/api";
+import { api } from "../services/api";
+import { useAuthContext } from "../contexts/AuthContext";
 import chefImg from "../assets/chef.png";
 import "../css/AdminDashboard.css";
 
@@ -33,6 +34,7 @@ interface VerificationRequest {
   };
   status: string;
   createdAt: string;
+  isVirtual?: boolean; // true za restorane bez verification requesta
 }
 
 interface ReviewItem {
@@ -53,7 +55,24 @@ interface ReviewItem {
   };
 }
 
-type TabType = "verification" | "users" | "moderation";
+interface Restaurant {
+  id: number;
+  name: string;
+  adress?: string;
+  city?: string;
+  phone?: string;
+  email?: string;
+  description?: string;
+  verified?: boolean;
+  createdAt?: string;
+  user?: {
+    id: number;
+    firstName: string;
+    lastName: string;
+  };
+}
+
+type TabType = "verification" | "users" | "moderation" | "restaurants";
 
 function AdminDashboard() {
   const navigate = useNavigate();
@@ -66,6 +85,8 @@ function AdminDashboard() {
   const [users, setUsers] = useState<User[]>([]);
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [selectedReview, setSelectedReview] = useState<ReviewItem | null>(null);
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
 
   // Loading states
   const [loading, setLoading] = useState(false);
@@ -82,8 +103,40 @@ function AdminDashboard() {
     
     try {
       if (activeTab === "verification") {
-        const data = await api.getPendingVerifications();
-        setVerificationRequests(data);
+        // Dohvati postojeće verification requests
+        const pendingRequests = await api.getPendingVerifications();
+        
+        // Dohvati sve restorane
+        const allRestaurants = await api.getRestaurants();
+        
+        // Filtriraj neverificirane restorane koji NEMAJU verification request
+        const restaurantIdsWithRequest = new Set(
+          pendingRequests.map((req: VerificationRequest) => req.restaurant?.id)
+        );
+        
+        const unverifiedWithoutRequest = allRestaurants
+          .filter((r: Restaurant) => !r.verified && !restaurantIdsWithRequest.has(r.id))
+          .map((r: Restaurant) => ({
+            // Kreiraj "virtualni" verification request za prikaz
+            id: -r.id, // Negativan ID za razlikovanje
+            restaurant: {
+              id: r.id,
+              name: r.name,
+              adress: r.adress,
+              city: r.city,
+              phone: r.phone,
+              email: r.email,
+              description: r.description,
+              user: r.user,
+            },
+            status: 'pending',
+            createdAt: r.createdAt || new Date().toISOString(),
+            isVirtual: true, // Oznaka da je virtualni request
+          }));
+        
+        // Kombiniraj i sortiraj
+        const combined = [...pendingRequests, ...unverifiedWithoutRequest];
+        setVerificationRequests(combined);
       } else if (activeTab === "users") {
         const data = await api.getAllUsers();
         // Filter out admin users from the list
@@ -121,9 +174,11 @@ function AdminDashboard() {
           }
         }
         
-        // Sortiraj po datumu (najnoviji prvo)
         allReviews.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         setReviews(allReviews);
+      } else if (activeTab === "restaurants") {
+        const data = await api.getRestaurants();
+        setRestaurants(data);
       }
     } catch (err: any) {
       setError(err.message || "Greška pri dohvaćanju podataka");
@@ -133,16 +188,24 @@ function AdminDashboard() {
     }
   };
 
-  const handleLogout = () => {
-    clearTokens();
+  const { logout } = useAuthContext();
+
+  const handleLogout = async () => {
+    await logout();
     navigate("/");
   };
 
   // ==================== VERIFICATION ACTIONS ====================
-  const handleApproveVerification = async (id: number) => {
+  const handleApproveVerification = async (verification: VerificationRequest) => {
     try {
-      await api.approveVerification(id);
-      setVerificationRequests(prev => prev.filter(v => v.id !== id));
+      if (verification.isVirtual) {
+        // Za virtualne requestove - direktno verificiraj restoran
+        await api.updateRestaurant(verification.restaurant.id, { verified: true });
+      } else {
+        // Za prave verification requestove
+        await api.approveVerification(verification.id);
+      }
+      setVerificationRequests(prev => prev.filter(v => v.id !== verification.id));
       setSelectedVerification(null);
       alert("Restoran je uspješno verificiran!");
     } catch (err: any) {
@@ -150,15 +213,22 @@ function AdminDashboard() {
     }
   };
 
-  const handleRejectVerification = async (id: number) => {
+  const handleRejectVerification = async (verification: VerificationRequest) => {
     const reason = prompt("Unesite razlog odbijanja:");
     if (!reason) return;
     
     try {
-      await api.rejectVerification(id, reason);
-      setVerificationRequests(prev => prev.filter(v => v.id !== id));
+      if (verification.isVirtual) {
+        // Za virtualne requestove - samo ukloni iz liste (restoran ostaje neverificiran)
+        // Opcionalno: moglo bi se implementirati slanje emaila vlasniku
+        alert("Restoran nije verificiran. Vlasnik će morati poslati novi zahtjev.");
+      } else {
+        // Za prave verification requestove
+        await api.rejectVerification(verification.id, reason);
+        alert("Zahtjev za verifikaciju je odbijen.");
+      }
+      setVerificationRequests(prev => prev.filter(v => v.id !== verification.id));
       setSelectedVerification(null);
-      alert("Zahtjev za verifikaciju je odbijen.");
     } catch (err: any) {
       alert(err.message || "Greška pri odbijanju verifikacije");
     }
@@ -221,6 +291,23 @@ function AdminDashboard() {
     }
   };
 
+  const handleChangeRole = async (userId: number, newRole: string) => {
+    if (!confirm(`Jeste li sigurni da želite promijeniti ulogu korisnika u "${newRole}"?`)) return;
+    
+    try {
+      await api.changeUserRole(userId, newRole);
+      setUsers(prev => prev.map(u => 
+        u.id === userId ? { ...u, role: newRole } : u
+      ));
+      if (selectedUser?.id === userId) {
+        setSelectedUser({ ...selectedUser, role: newRole });
+      }
+      alert("Uloga korisnika je promijenjena.");
+    } catch (err: any) {
+      alert(err.message || "Greška pri promjeni uloge korisnika");
+    }
+  };
+
   // ==================== REVIEW/RATING ACTIONS ====================
   const handleDeleteReview = async (review: ReviewItem) => {
     if (!confirm("Jeste li sigurni da želite obrisati ovu recenziju?")) return;
@@ -239,12 +326,23 @@ function AdminDashboard() {
     }
   };
 
-  // Format date helper
+  const handleDeleteRestaurant = async (restaurantId: number) => {
+    if (!confirm("Jeste li sigurni da želite obrisati ovaj restoran? Ova radnja će obrisati sve povezane podatke (slike, evente, recenzije).")) return;
+    
+    try {
+      await api.deleteRestaurant(restaurantId);
+      setRestaurants(prev => prev.filter(r => r.id !== restaurantId));
+      setSelectedRestaurant(null);
+      alert("Restoran je uspješno obrisan.");
+    } catch (err: any) {
+      alert(err.message || "Greška pri brisanju restorana");
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("hr-HR");
   };
 
-  // ==================== RENDER FUNCTIONS ====================
   const renderVerificationTab = () => {
     if (selectedVerification) {
       return (
@@ -287,27 +385,37 @@ function AdminDashboard() {
               <span className="detail-label">Opis</span>
               <span className="detail-value">{selectedVerification.restaurant.description || "N/A"}</span>
             </div>
+            {selectedVerification.isVirtual && (
+              <div className="detail-row">
+                <span className="detail-label">Napomena</span>
+                <span className="detail-value" style={{ color: '#f57c00', fontStyle: 'italic' }}>
+                  Restoran je ručno dodan u bazu bez formalnog zahtjeva za verifikaciju.
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="detail-actions">
             <button 
               className="action-btn approve"
-              onClick={() => handleApproveVerification(selectedVerification.id)}
+              onClick={() => handleApproveVerification(selectedVerification)}
             >
               Odobri
             </button>
             <button 
               className="action-btn reject"
-              onClick={() => handleRejectVerification(selectedVerification.id)}
+              onClick={() => handleRejectVerification(selectedVerification)}
             >
               Odbij
             </button>
-            <button 
-              className="action-btn delete-outline"
-              onClick={() => handleDeleteVerification(selectedVerification.id)}
-            >
-              Obriši
-            </button>
+            {!selectedVerification.isVirtual && (
+              <button 
+                className="action-btn delete-outline"
+                onClick={() => handleDeleteVerification(selectedVerification.id)}
+              >
+                Obriši
+              </button>
+            )}
           </div>
         </div>
       );
@@ -398,7 +506,17 @@ function AdminDashboard() {
             </div>
             <div className="detail-row">
               <span className="detail-label">Uloga</span>
-              <span className="detail-value">{selectedUser.role}</span>
+              <div className="detail-value role-control">
+                <select 
+                  value={selectedUser.role}
+                  onChange={(e) => handleChangeRole(selectedUser.id, e.target.value)}
+                  className="role-select"
+                >
+                  <option value="user">user</option>
+                  <option value="restaurant">restaurant</option>
+                  <option value="admin">admin</option>
+                </select>
+              </div>
             </div>
             <div className="detail-row">
               <span className="detail-label">Status</span>
@@ -561,6 +679,109 @@ function AdminDashboard() {
     );
   };
 
+  const renderRestaurantsTab = () => {
+    if (selectedRestaurant) {
+      return (
+        <div className="admin-detail-view">
+          <h2>Detalji restorana</h2>
+          <button className="back-button" onClick={() => setSelectedRestaurant(null)}>
+            ← Nazad
+          </button>
+
+          <div className="detail-content">
+            <div className="detail-row">
+              <span className="detail-label">Naziv</span>
+              <span className="detail-value">{selectedRestaurant.name}</span>
+            </div>
+            {selectedRestaurant.city && (
+              <div className="detail-row">
+                <span className="detail-label">Grad</span>
+                <span className="detail-value">{selectedRestaurant.city}</span>
+              </div>
+            )}
+            {selectedRestaurant.adress && (
+              <div className="detail-row">
+                <span className="detail-label">Adresa</span>
+                <span className="detail-value">{selectedRestaurant.adress}</span>
+              </div>
+            )}
+            {selectedRestaurant.phone && (
+              <div className="detail-row">
+                <span className="detail-label">Telefon</span>
+                <span className="detail-value">{selectedRestaurant.phone}</span>
+              </div>
+            )}
+            {selectedRestaurant.email && (
+              <div className="detail-row">
+                <span className="detail-label">Email</span>
+                <span className="detail-value">{selectedRestaurant.email}</span>
+              </div>
+            )}
+            <div className="detail-row">
+              <span className="detail-label">Status verifikacije</span>
+              <span className={`detail-value status-${selectedRestaurant.verified ? 'active' : 'blocked'}`}>
+                {selectedRestaurant.verified ? "VERIFICIRAN" : "NIJE VERIFICIRAN"}
+              </span>
+            </div>
+            {selectedRestaurant.user && (
+              <div className="detail-row">
+                <span className="detail-label">Vlasnik</span>
+                <span className="detail-value">
+                  {selectedRestaurant.user.firstName} {selectedRestaurant.user.lastName}
+                </span>
+              </div>
+            )}
+            {selectedRestaurant.description && (
+              <div className="detail-row">
+                <span className="detail-label">Opis</span>
+                <span className="detail-value">{selectedRestaurant.description}</span>
+              </div>
+            )}
+          </div>
+
+          <div className="detail-actions detail-actions-full">
+            <button 
+              className="action-btn delete full-width"
+              onClick={() => handleDeleteRestaurant(selectedRestaurant.id)}
+            >
+              Obriši restoran
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="admin-list-view">
+        <h2>Svi restorani ({restaurants.length})</h2>
+        {loading && <p>Učitavanje...</p>}
+        {error && <p className="error-message">{error}</p>}
+        {!loading && restaurants.length === 0 && (
+          <p className="no-data">Nema restorana.</p>
+        )}
+        <div className="list-items">
+          {restaurants.map((restaurant) => (
+            <div
+              key={restaurant.id}
+              className="list-item"
+              onClick={() => setSelectedRestaurant(restaurant)}
+            >
+              <div className="item-info">
+                <span className="item-name">{restaurant.name}</span>
+                <span className="item-details">
+                  {restaurant.city}{restaurant.adress ? `, ${restaurant.adress}` : ''}
+                </span>
+              </div>
+              <span className={`status-badge ${restaurant.verified ? 'active' : 'pending'}`}>
+                {restaurant.verified ? '✓ Verificiran' : '⏳ Nije verificiran'}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="admin-dashboard">
       {/* Header - Moderan dizajn kao Dashboard */}
@@ -619,6 +840,15 @@ function AdminDashboard() {
                 <span className="tab-badge">{reviews.length}</span>
               )}
             </button>
+            <button
+              className={`tab-btn ${activeTab === "restaurants" ? "active" : ""}`}
+              onClick={() => {
+                setActiveTab("restaurants");
+                setSelectedRestaurant(null);
+              }}
+            >
+              Svi restorani
+            </button>
           </div>
 
           {/* Tab Content */}
@@ -626,6 +856,7 @@ function AdminDashboard() {
             {activeTab === "verification" && renderVerificationTab()}
             {activeTab === "users" && renderUsersTab()}
             {activeTab === "moderation" && renderModerationTab()}
+            {activeTab === "restaurants" && renderRestaurantsTab()}
           </div>
         </div>
       </main>
