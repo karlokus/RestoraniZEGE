@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuthContext } from "../contexts/AuthContext";
 import { useFavoritesContext } from "../contexts/FavoritesContext";
@@ -13,7 +13,7 @@ import chefImg from "../assets/chef.png";
 
 function Home() {
    const { user, isAuthenticated, logout } = useAuthContext();
-   const { isFavorite } = useFavoritesContext();
+   const { isFavorite, favorites, favoriteRestaurants, loadFavoriteRestaurants, loadingRestaurants } = useFavoritesContext();
    const { getUpcomingEvents } = useEventsContext();
    const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotificationsContext();
    const { 
@@ -33,6 +33,13 @@ function Home() {
    const [showNotifications, setShowNotifications] = useState(false);
    const hideTimer = useRef<number | null>(null);
    const notifTimer = useRef<number | null>(null);
+
+   // Učitaj favorite restorane kad se promijeni filter na 'favorites'
+   useEffect(() => {
+      if (activeFilter === 'favorites') {
+         loadFavoriteRestaurants();
+      }
+   }, [activeFilter, favorites]);
 
    // ispisuje inicijale imena i prezimena korisnika
    const inicijali = (() => {
@@ -114,12 +121,16 @@ function Home() {
                </div>
 
                <div className="header-right">
-                  {isAuthenticated && user?.role === "restaurant" ? (
+                  {isAuthenticated && user?.role === "restaurant" && (
                      <Link className="dashboard-link" to="/dashboard" title="Dashboard">
                         📊
                      </Link>
-                  ) : null
-                  }
+                  )}
+                  {isAuthenticated && user?.role === "admin" && (
+                     <Link className="dashboard-link" to="/admin" title="Admin Dashboard">
+                        ⚙️
+                     </Link>
+                  )}
 
                   {isAuthenticated ? (
                      <>
@@ -174,9 +185,11 @@ function Home() {
                               </div>
                            )}
                         </div>
-                        <button className="favourite-btn" onClick={() => setActiveFilter('favorites')}>
-                           ♥
-                        </button>
+                        {user?.role !== 'admin' && (
+                           <button className="favourite-btn" onClick={() => setActiveFilter('favorites')}>
+                              ♥
+                           </button>
+                        )}
                         {/* maknuta ikona avatara za prijavljenog korisnika */}
                         <div
                            className="user-dropdown"
@@ -250,12 +263,14 @@ function Home() {
                            >
                               Svi restorani
                            </button>
-                           <button
-                              className={`filter-button ${activeFilter === 'favorites' ? 'active' : ''}`}
-                              onClick={() => setActiveFilter('favorites')}
-                           >
-                              Omiljeni
-                           </button>
+                           {user?.role !== 'admin' && (
+                              <button
+                                 className={`filter-button ${activeFilter === 'favorites' ? 'active' : ''}`}
+                                 onClick={() => setActiveFilter('favorites')}
+                              >
+                                 Omiljeni
+                              </button>
+                           )}
                            <button
                               className={`filter-button ${activeFilter === 'events' ? 'active' : ''}`}
                               onClick={() => setActiveFilter('events')}
@@ -277,23 +292,44 @@ function Home() {
                               ) : (
                                  getUpcomingEvents()
                                     .filter(event =>
-                                       event.title.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
-                                       event.restaurantName?.toLowerCase().includes(filters.searchQuery.toLowerCase())
+                                       (event.title.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+                                       event.restaurantName?.toLowerCase().includes(filters.searchQuery.toLowerCase())) &&
+                                       favorites.includes(event.restaurantId) // Prikaži samo događaje od omiljenih restorana
                                     )
-                                    .map((event) => (
-                                       <EventCard key={event.id} event={event} />
-                                    ))
+                                    .length === 0 ? (
+                                       <div style={{ padding: '2rem', textAlign: 'center', gridColumn: '1 / -1' }}>
+                                          <p style={{ fontSize: '18px', color: '#666' }}>Nema nadolazećih događaja od vaših omiljenih restorana.</p>
+                                       </div>
+                                    ) : (
+                                       getUpcomingEvents()
+                                          .filter(event =>
+                                             (event.title.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+                                             event.restaurantName?.toLowerCase().includes(filters.searchQuery.toLowerCase())) &&
+                                             favorites.includes(event.restaurantId)
+                                          )
+                                          .map((event) => (
+                                             <EventCard key={event.id} event={event} />
+                                          ))
+                                    )
                               )}
                            </div>
                         ) : activeFilter === 'favorites' ? (
                            <div className="restaurant-grid">
-                              {restaurants
-                                 .filter((restaurant: Restaurant) => isFavorite(restaurant.id))
-                                 .map((restaurant: Restaurant) => (
-                                    <RestaurantCard key={restaurant.id} restaurant={restaurant} />
-                                 ))
-                              }
-                              {restaurants.filter((restaurant: Restaurant) => isFavorite(restaurant.id)).length === 0 && (
+                              {loadingRestaurants ? (
+                                 <div style={{ padding: '2rem', textAlign: 'center', gridColumn: '1 / -1' }}>
+                                    Učitavanje omiljenih restorana...
+                                 </div>
+                              ) : favoriteRestaurants.length > 0 ? (
+                                 favoriteRestaurants
+                                    .filter((restaurant: Restaurant) => 
+                                       restaurant.name.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+                                       restaurant.cuisine.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+                                       restaurant.location.toLowerCase().includes(filters.searchQuery.toLowerCase())
+                                    )
+                                    .map((restaurant: Restaurant) => (
+                                       <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+                                    ))
+                              ) : (
                                  <div style={{ padding: '2rem', textAlign: 'center', gridColumn: '1 / -1' }}>
                                     <p style={{ fontSize: '18px', color: '#666' }}>Nemate omiljenih restorana.</p>
                                  </div>

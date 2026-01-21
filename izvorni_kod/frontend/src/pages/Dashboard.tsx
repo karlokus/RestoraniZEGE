@@ -102,7 +102,7 @@ function Dashboard() {
         <div className="dashboard-container">
           <div className="dashboard-title-row">
             <div>
-              <h1>Moji Restorani</h1>
+              <h1>Moji restorani</h1>
               <p style={{color: 'var(--text-secondary)', margin: '0.5rem 0 0 0', fontSize: '0.95rem'}}>
                 Upravljajte svojim restoranima i događajima
               </p>

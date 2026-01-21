@@ -68,6 +68,7 @@ export interface SearchRestaurantsParams {
    cuisineType?: string;
    city?: string;
    minRating?: number;
+   maxPriceRange?: number;
    verifiedOnly?: boolean;
    page?: number;
    limit?: number;
@@ -227,6 +228,7 @@ export interface UpdateRestaurantData {
    email?: string;
    website?: string;
    workingHours?: string;
+   verified?: boolean;
 }
 
 
@@ -446,6 +448,7 @@ export const api = {
       if (params.cuisineType) queryParams.append('cuisineType', params.cuisineType);
       if (params.city) queryParams.append('city', params.city);
       if (params.minRating !== undefined) queryParams.append('minRating', params.minRating.toString());
+      if (params.maxPriceRange !== undefined) queryParams.append('maxPriceRange', params.maxPriceRange.toString());
       if (params.verifiedOnly !== undefined) queryParams.append('verifiedOnly', params.verifiedOnly.toString());
       if (params.page) queryParams.append('page', params.page.toString());
       if (params.limit) queryParams.append('limit', params.limit.toString());
@@ -884,6 +887,21 @@ export const api = {
          const error = await response.json().catch(() => ({ message: 'Failed to delete user' }));
          throw new Error(error.message || 'Failed to delete user');
       }
+   },
+
+   // Change user role (admin only)
+   async changeUserRole(userId: number, role: string): Promise<any> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/users/${userId}/role`, {
+         method: 'PATCH',
+         body: JSON.stringify({ role }),
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to change user role' }));
+         throw new Error(error.message || 'Failed to change user role');
+      }
+
+      return response.json();
    },
 
    // Update user profile

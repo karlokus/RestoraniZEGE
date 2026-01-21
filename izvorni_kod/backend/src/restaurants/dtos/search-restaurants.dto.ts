@@ -11,6 +11,7 @@ import {
 import { Type, Transform } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { CuisineType } from '../enums/cuisine-type.enum';
+import { PriceRange } from '../enums/price-range.enum';
 
 export class SearchRestaurantsDto {
     @ApiPropertyOptional({
@@ -60,6 +61,19 @@ export class SearchRestaurantsDto {
     verifiedOnly?: boolean;
 
     @ApiPropertyOptional({
+        description: 'Maksimalni cjenovni razred (1-4)',
+        example: 2,
+        minimum: 1,
+        maximum: 4,
+    })
+    @IsOptional()
+    @IsInt()
+    @Min(1)
+    @Max(4)
+    @Type(() => Number)
+    maxPriceRange?: number;
+
+    @ApiPropertyOptional({
         description: 'Broj stranice (pagination)',
         example: 1,
         minimum: 1,
@@ -87,12 +101,12 @@ export class SearchRestaurantsDto {
 
     @ApiPropertyOptional({
         description: 'Polje za sortiranje',
-        enum: ['name', 'averageRating', 'createdAt'],
+        enum: ['name', 'averageRating', 'createdAt', 'priceRange'],
         example: 'name',
         default: 'name',
     })
     @IsOptional()
-    @IsEnum(['name', 'averageRating', 'createdAt'])
+    @IsEnum(['name', 'averageRating', 'createdAt', 'priceRange'])
     sortBy?: string = 'name';
 
     @ApiPropertyOptional({

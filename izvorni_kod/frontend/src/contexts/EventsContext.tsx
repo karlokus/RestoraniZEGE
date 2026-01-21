@@ -40,9 +40,10 @@ export function EventsProvider({ children }: { children: ReactNode }) {
 
          if (response.ok) {
             const data = await response.json();
-            // Mapiraj događaje i dodaj ime restorana
+            // Mapiraj događaje i dodaj ime restorana i restaurantId
             const mappedEvents = data.map((event: any) => ({
                ...event,
+               restaurantId: event.restaurantId || event.restaurant?.id,
                restaurantName: event.restaurant?.name || 'Nepoznat restoran',
             }));
             setEvents(mappedEvents);
