@@ -32,6 +32,24 @@
    transform: scale(1.1);
 }
 
+.dashboard-link {
+   background: none;
+   border: none;
+   font-size: 1.5rem;
+   cursor: pointer;
+   color: #3d2514;
+   transition: transform 0.2s;
+   padding: 0.5rem;
+   text-decoration: none;
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+}
+
+.dashboard-link:hover {
+   transform: scale(1.1);
+}
+
 .bell-btn {
    background: none;
    border: none;
@@ -608,5 +626,168 @@ main h2 {
 
    .home-txt h1 {
       font-size: 1.5rem;
+   }
+}
+
+.header-things {
+   flex-wrap: wrap;
+}
+
+.header-right {
+   flex-wrap: wrap;
+   justify-content: flex-end;
+}
+
+.user-chip {
+   max-width: min(360px, 60vw);
+}
+
+.user-chip .user-name {
+   display: inline-block;
+   max-width: 100%;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: nowrap;
+}
+
+.notifications-dropdown {
+   max-width: calc(100vw - 1.5rem);
+}
+
+@media (max-width: 820px) {
+   header {
+      padding: 0.9rem 1.2rem;
+   }
+
+   main {
+      padding: 1.25rem 1.2rem;
+   }
+
+   .header-title {
+      font-size: 1.55rem;
+   }
+
+   .header-img {
+      height: 52px;
+   }
+}
+
+@media (max-width: 620px) {
+   .header-things {
+      gap: 10px;
+   }
+
+   .brand-wrap {
+      order: 1;
+      flex: 1 1 auto;
+      min-width: 180px;
+   }
+
+   .header-center {
+      order: 3;
+      flex: 1 1 100%;
+      justify-content: center;
+   }
+
+   .header-right {
+      order: 2;
+      flex: 0 0 auto;
+      gap: 0.4rem;
+   }
+
+   .header-center {
+      display: none;
+   }
+
+   .user-chip {
+      max-width: 55vw;
+      padding: 0.3rem 0.55rem 0.3rem 0.35rem;
+   }
+
+   .initials-badge {
+      width: 24px;
+      height: 24px;
+      font-size: 0.75rem;
+   }
+
+   .bell-btn,
+   .favourite-btn {
+      padding: 0.35rem;
+      font-size: 1.35rem;
+   }
+
+   .notifications-dropdown {
+      right: 0;
+      left: auto;
+      width: min(360px, calc(100vw - 1.5rem));
+   }
+
+   .search-filter {
+      padding: 0;
+      margin: 1rem auto 1.5rem;
+   }
+
+   .search-form {
+      flex-direction: column;
+      gap: 0.6rem;
+   }
+
+   .search-button {
+      width: 100%;
+   }
+
+   .filters {
+      width: 100%;
+      justify-content: center;
+   }
+
+   .filter-welcome {
+      padding: 0;
+   }
+
+   .restaurant-grid {
+      padding: 0;
+   }
+}
+
+@media (max-width: 420px) {
+   header {
+      padding: 0.8rem 0.9rem;
+   }
+
+   main {
+      padding: 1rem 0.9rem;
+   }
+
+   .header-title {
+      font-size: 1.25rem;
+   }
+
+   .brand-sub {
+      margin-left: 0.6rem;
+      font-size: 0.58rem;
+   }
+}
+
+/* ===== FIX: notifications dropdown should open to the RIGHT on mobile ===== */
+@media (max-width: 620px) {
+   .notifications-dropdown {
+      left: 0;
+      /* poravnaj na lijevi rub zvona */
+      right: auto;
+      /* ugasi poravnanje na desno */
+      width: min(360px, calc(100vw - 1.5rem));
+      /* stane u ekran */
+      max-width: calc(100vw - 1.5rem);
+   }
+}
+
+/* Extra: na baš malim ekranima neka bude "full width" s marginom */
+@media (max-width: 420px) {
+   .notifications-dropdown {
+      left: 0.75rem;
+      right: 0.75rem;
+      width: auto;
+      max-width: none;
    }
 }

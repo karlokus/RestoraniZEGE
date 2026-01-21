@@ -1,27 +1,45 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { useAuthContext } from "../contexts/AuthContext";
 import { useFavoritesContext } from "../contexts/FavoritesContext";
 import { useEventsContext } from "../contexts/EventsContext";
 import { useNotificationsContext } from "../contexts/NotificationsContext";
-import RestaurantCard, { type Restaurant } from "../components/RestaurantCard"
-import { api } from "../services/api";
+import { useRestaurantsContext } from "../contexts/RestaurantsContext";
+import RestaurantCard, { type Restaurant } from "../components/RestaurantCard";
+import EventCard from "../components/EventCard";
+import Pagination from "../components/Pagination";
 import "../css/Home.css"
 import chefImg from "../assets/chef.png";
 
 function Home() {
    const { user, isAuthenticated, logout } = useAuthContext();
-   const { isFavorite } = useFavoritesContext();
+   const { favorites, favoriteRestaurants, loadFavoriteRestaurants, loadingRestaurants } = useFavoritesContext();
    const { getUpcomingEvents } = useEventsContext();
    const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotificationsContext();
-   const [searchQuery, setSearchQuery] = useState("");
-   const [error, setError] = useState<string | null>(null);
-   const [loading, setLoading] = useState(true);
-   const [restaurants, setRestaurants] = useState<Array<Restaurant>>([]);
+   const {
+      restaurants,
+      loading,
+      error,
+      filters,
+      setSearchQuery,
+      pagination,
+      currentPage,
+      setCurrentPage,
+      itemsPerPage
+   } = useRestaurantsContext();
+
    const [activeFilter, setActiveFilter] = useState<'all' | 'favorites' | 'events'>('all');
    const [showDropdown, setShowDropdown] = useState(false);
    const [showNotifications, setShowNotifications] = useState(false);
    const hideTimer = useRef<number | null>(null);
    const notifTimer = useRef<number | null>(null);
+
+   // Učitaj favorite restorane kad se promijeni filter na 'favorites'
+   useEffect(() => {
+      if (activeFilter === 'favorites') {
+         loadFavoriteRestaurants();
+      }
+   }, [activeFilter, favorites]);
 
    // ispisuje inicijale imena i prezimena korisnika
    const inicijali = (() => {
@@ -33,53 +51,9 @@ function Home() {
       return (ime + prez).toUpperCase();
    })();
 
-   // Load restaurants from backend
-   useEffect(() => {
-      const loadRestaurants = async () => {
-         try {
-            setLoading(true);
-            const data = await api.getRestaurants();
-            // Map backend restaurant data to frontend Restaurant type
-            const mappedRestaurants: Restaurant[] = data.map((r: any) => ({
-               id: r.id,
-               name: r.name || '',
-               cuisine: r.role || r.cuisineType || r.cuisine || '',
-               location: r.adress || r.city || r.location || '',
-               rating: r.rating || 0,
-               priceLevel: r.priceLevel || 0,
-               imageUrl: r.imageUrl || '',
-            }));
-            setRestaurants(mappedRestaurants);
-            setError(null);
-         } catch (err: any) {
-            console.error('Failed to load restaurants:', err);
-            setError("Neuspješno učitavanje restorana. Pokušajte ponovno.");
-            setRestaurants([]);
-         } finally {
-            setLoading(false);
-         }
-      };
-
-      loadRestaurants();
-   }, []);
-
    const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-      if (!searchQuery.trim()) return;
-      if (loading) return;
-      /*
-            setLoading(true);
-            try {
-               const searchResults = await searchRestaurants(searchQuery);
-               setRestaurants(searchResults);
-               setError(null);
-            } catch (error) {
-               setError("Error searching restaurants. Please try again.");
-            } finally {
-               setLoading(false);
-            }
-         }
-      */
+      // Pretraga se automatski vrši preko konteksta
    }
 
    const handleLogout = async () => {
@@ -147,6 +121,17 @@ function Home() {
                </div>
 
                <div className="header-right">
+                  {isAuthenticated && user?.role === "restaurant" && (
+                     <Link className="dashboard-link" to="/dashboard" title="Dashboard">
+                        📊
+                     </Link>
+                  )}
+                  {isAuthenticated && user?.role === "admin" && (
+                     <Link className="dashboard-link" to="/admin" title="Admin Dashboard">
+                        ⚙️
+                     </Link>
+                  )}
+
                   {isAuthenticated ? (
                      <>
                         <div
@@ -187,7 +172,7 @@ function Home() {
                                                 <h4>{notification.title}</h4>
                                                 <p>{notification.message}</p>
                                                 <span className="notification-time">
-                                                   {formatTimestamp(notification.timestamp)}
+                                                   {formatTimestamp(notification.sentAt)}
                                                 </span>
                                              </div>
                                              {!notification.read && (
@@ -200,21 +185,23 @@ function Home() {
                               </div>
                            )}
                         </div>
-                        <button className="favourite-btn" onClick={() => setActiveFilter('favorites')}>
-                           ♥
-                        </button>
+                        {user?.role !== 'admin' && (
+                           <button className="favourite-btn" onClick={() => setActiveFilter('favorites')}>
+                              ♥
+                           </button>
+                        )}
                         {/* maknuta ikona avatara za prijavljenog korisnika */}
                         <div
                            className="user-dropdown"
                            onMouseEnter={handleMouseEnter}
                            onMouseLeave={handleMouseLeave}
                         >
-                           <a className="user-chip" href="/profile">
+                           <Link className="user-chip" to="/profile">
                               {inicijali && (
                                  <span className="initials-badge" aria-hidden="true">{inicijali}</span>
                               )}
                               <span className="user-name">{user?.name || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.email}</span>
-                           </a>
+                           </Link>
                            {showDropdown && (
                               <div
                                  className="dropdown-content"
@@ -231,7 +218,7 @@ function Home() {
                   ) : (
                      <>
                         {/* za neprijavljenog prikazuj samo gumb/link za login */}
-                        <a className="login-button" href="/login">Prijavi se</a>
+                        <Link className="login-button" to="/login">Prijavi se</Link>
                      </>
                   )}
                </div>
@@ -243,10 +230,9 @@ function Home() {
                   <input type="text"
                      placeholder="Pretrazite restorane"
                      className="search-input"
-                     value={searchQuery}
+                     value={filters.searchQuery}
                      onChange={(e) => setSearchQuery(e.target.value)}
                   />
-                  <button type="submit" className="search-button">Search</button>
                </form>
                <a className="filters" href="/filter">Filtri</a>
             </div>
@@ -277,12 +263,14 @@ function Home() {
                            >
                               Svi restorani
                            </button>
-                           <button
-                              className={`filter-button ${activeFilter === 'favorites' ? 'active' : ''}`}
-                              onClick={() => setActiveFilter('favorites')}
-                           >
-                              Omiljeni
-                           </button>
+                           {user?.role !== 'admin' && (
+                              <button
+                                 className={`filter-button ${activeFilter === 'favorites' ? 'active' : ''}`}
+                                 onClick={() => setActiveFilter('favorites')}
+                              >
+                                 Omiljeni
+                              </button>
+                           )}
                            <button
                               className={`filter-button ${activeFilter === 'events' ? 'active' : ''}`}
                               onClick={() => setActiveFilter('events')}
@@ -293,38 +281,96 @@ function Home() {
                         <h2>
                            {activeFilter === 'all' && 'Svi restorani'}
                            {activeFilter === 'favorites' && 'Omiljeni restorani'}
-                           {activeFilter === 'events' && 'Događaji'}
+                           {activeFilter === 'events' && 'Nadolazeći događaji'}
                         </h2>
-                        <div className="restaurant-grid">
-                           {restaurants
-                              .filter((restaurant: Restaurant) => {
-                                 const matchesSearch = restaurant.name.toLowerCase().includes(searchQuery.toLowerCase());
-                                 if (activeFilter === 'favorites') {
-                                    return matchesSearch && isFavorite(restaurant.id);
-                                 }
-                                 if (activeFilter === 'events') {
-                                    return matchesSearch && getUpcomingEvents().some(event => event.restaurantId === restaurant.id);
-                                 }
-                                 return matchesSearch;
-                              })
-                              .map((restaurant: Restaurant) => (
-                                 <RestaurantCard key={restaurant.id} restaurant={restaurant} />
-                              ))
-                           }
-                        </div>
+                        {activeFilter === 'events' ? (
+                           <div className="events-grid">
+                              {getUpcomingEvents().length === 0 ? (
+                                 <div style={{ padding: '2rem', textAlign: 'center', gridColumn: '1 / -1' }}>
+                                    <p style={{ fontSize: '18px', color: '#666' }}>Trenutno nema nadolazećih događaja.</p>
+                                 </div>
+                              ) : (
+                                 getUpcomingEvents()
+                                    .filter(event =>
+                                       (event.title.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+                                          event.restaurantName?.toLowerCase().includes(filters.searchQuery.toLowerCase())) &&
+                                       favorites.includes(event.restaurantId) // Prikaži samo događaje od omiljenih restorana
+                                    )
+                                    .length === 0 ? (
+                                    <div style={{ padding: '2rem', textAlign: 'center', gridColumn: '1 / -1' }}>
+                                       <p style={{ fontSize: '18px', color: '#666' }}>Nema nadolazećih događaja od vaših omiljenih restorana.</p>
+                                    </div>
+                                 ) : (
+                                    getUpcomingEvents()
+                                       .filter(event =>
+                                          (event.title.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+                                             event.restaurantName?.toLowerCase().includes(filters.searchQuery.toLowerCase())) &&
+                                          favorites.includes(event.restaurantId)
+                                       )
+                                       .map((event) => (
+                                          <EventCard key={event.id} event={event} />
+                                       ))
+                                 )
+                              )}
+                           </div>
+                        ) : activeFilter === 'favorites' ? (
+                           <div className="restaurant-grid">
+                              {loadingRestaurants ? (
+                                 <div style={{ padding: '2rem', textAlign: 'center', gridColumn: '1 / -1' }}>
+                                    Učitavanje omiljenih restorana...
+                                 </div>
+                              ) : favoriteRestaurants.length > 0 ? (
+                                 favoriteRestaurants
+                                    .filter((restaurant: Restaurant) =>
+                                       restaurant.name.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+                                       restaurant.cuisine.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+                                       restaurant.location.toLowerCase().includes(filters.searchQuery.toLowerCase())
+                                    )
+                                    .map((restaurant: Restaurant) => (
+                                       <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+                                    ))
+                              ) : (
+                                 <div style={{ padding: '2rem', textAlign: 'center', gridColumn: '1 / -1' }}>
+                                    <p style={{ fontSize: '18px', color: '#666' }}>Nemate omiljenih restorana.</p>
+                                 </div>
+                              )}
+                           </div>
+                        ) : (
+                           <>
+                              <div className="restaurant-grid">
+                                 {restaurants.map((restaurant: Restaurant) => (
+                                    <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+                                 ))}
+                              </div>
+                              {pagination.totalPages > 1 && (
+                                 <Pagination
+                                    currentPage={currentPage}
+                                    totalPages={pagination.totalPages}
+                                    onPageChange={setCurrentPage}
+                                    totalItems={pagination.total}
+                                    itemsPerPage={itemsPerPage}
+                                 />
+                              )}
+                           </>
+                        )}
                      </>
                   ) : (
                      <>
                         <h2>Istaknuti restorani</h2>
                         <div className="restaurant-grid">
-                           {restaurants
-                              .filter((restaurant: Restaurant) =>
-                                 restaurant.name.toLowerCase().includes(searchQuery.toLowerCase())
-                              )
-                              .map((restaurant: Restaurant) => (
-                                 <RestaurantCard key={restaurant.id} restaurant={restaurant} />
-                              ))}
+                           {restaurants.map((restaurant: Restaurant) => (
+                              <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+                           ))}
                         </div>
+                        {pagination.totalPages > 1 && (
+                           <Pagination
+                              currentPage={currentPage}
+                              totalPages={pagination.totalPages}
+                              onPageChange={setCurrentPage}
+                              totalItems={pagination.total}
+                              itemsPerPage={itemsPerPage}
+                           />
+                        )}
                      </>
                   )}
                </>

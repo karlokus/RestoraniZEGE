@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '../config/api.config';
+import { API_BASE_URL, API_ENDPOINTS } from '../config/api.config';
 
 export interface RegisterData {
    firstName: string;
@@ -32,6 +32,203 @@ export interface User {
    lastName: string;
    email: string;
    role: string;
+}
+
+// Restaurant interfaces
+export interface Restaurant {
+   id: number;
+   name: string;
+   description?: string;
+   cuisineType?: string;
+   priceRange?: number;
+   adress?: string;
+   city?: string;
+   latitude?: number;
+   longitude?: number;
+   phone?: string;
+   email?: string;
+   website?: string;
+   workingHours?: string;
+   verified: boolean;
+   averageRating: number;
+   totalRatings: number;
+   createdAt?: string;
+   updatedAt?: string;
+   userId?: number;
+   user?: {
+      id: number;
+      firstName: string;
+      lastName: string;
+      email: string;
+   };
+}
+
+export interface SearchRestaurantsParams {
+   search?: string;
+   cuisineType?: string;
+   city?: string;
+   minRating?: number;
+   maxPriceRange?: number;
+   verifiedOnly?: boolean;
+   page?: number;
+   limit?: number;
+   sortBy?: string;
+   sortOrder?: 'ASC' | 'DESC';
+}
+
+export interface SearchRestaurantsResponse {
+   data: Restaurant[];
+   meta: {
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+   };
+}
+
+// Comment interfaces
+export interface Comment {
+   id: number;
+   content: string;
+   userId: number;
+   restaurantId: number;
+   isVisible: boolean;
+   createdAt: string;
+   user?: {
+      id: number;
+      firstName: string;
+      lastName: string;
+   };
+}
+
+export interface CreateCommentData {
+   restaurantId: number;
+   content: string;
+}
+
+// Rating interfaces
+export interface Rating {
+   id: number;
+   rating: number;
+   comment?: string;
+   userId: number;
+   restaurantId: number;
+   createdAt: string;
+   user?: {
+      id: number;
+      firstName: string;
+      lastName: string;
+   };
+}
+
+export interface CreateRatingData {
+   restaurantId: number;
+   rating: number;
+   comment?: string;
+}
+
+// Photo interfaces
+export interface RestaurantPhoto {
+   id: number;
+   photoUrl: string;
+   isPrimary: boolean;
+   uploadedAt: string;
+}
+
+// Event interfaces
+export interface Event {
+   id: string;
+   title: string;
+   description: string;
+   eventDate: string;
+   imageUrl?: string;
+   restaurantId: number;
+   restaurant?: Restaurant;
+   createdAt?: string;
+}
+
+export interface CreateEventData {
+   restaurantId: string;
+   title: string;
+   description: string;
+   eventDate: string;
+   imageUrl?: string;
+}
+
+export interface UpdateEventData {
+   title?: string;
+   description?: string;
+   eventDate?: string;
+   imageUrl?: string;
+}
+
+// Photo upload
+export interface UploadPhotoData {
+   restaurantId: number;
+   file: File;
+}
+
+// Price range enum matching backend
+export const PriceRange = {
+   LOW: 1,        // € - Niski
+   MEDIUM: 2,     // €€ - Srednji
+   HIGH: 3,       // €€€ - Visoki
+   PREMIUM: 4,    // €€€€ - Premium/Michelin
+} as const;
+export type PriceRange = typeof PriceRange[keyof typeof PriceRange];
+
+// Cuisine types enum matching backend
+export const CuisineType = {
+   ITALIAN: 'talijanska',
+   CHINESE: 'kineska',
+   MEXICAN: 'meksička',
+   INDIAN: 'indijska',
+   JAPANESE: 'japanska',
+   THAI: 'tajlandska',
+   MEDITERRANEAN: 'mediteranska',
+   FAST_FOOD: 'brza-hrana',
+   VEGETARIAN: 'vegetarijanska',
+   SEAFOOD: 'morski-plodovi',
+   STEAKHOUSE: 'steakhouse',
+   BISTRO: 'bistro',
+   CAFE: 'kafić',
+   PIZZA: 'pizzeria',
+   BAKERY: 'pekara',
+   CROATIAN: 'hrvatska',
+} as const;
+export type CuisineType = typeof CuisineType[keyof typeof CuisineType];
+
+// Create restaurant interface
+export interface CreateRestaurantData {
+   name: string;
+   description?: string;
+   cuisineType?: CuisineType;
+   priceRange?: PriceRange;
+   adress?: string;
+   city?: string;
+   latitude?: number;
+   longitude?: number;
+   phone?: string;
+   email?: string;
+   website?: string;
+   workingHours?: string;
+}
+
+// Update restaurant interface
+export interface UpdateRestaurantData {
+   name?: string;
+   description?: string;
+   cuisineType?: CuisineType;
+   priceRange?: PriceRange;
+   adress?: string;
+   city?: string;
+   latitude?: number;
+   longitude?: number;
+   phone?: string;
+   email?: string;
+   website?: string;
+   workingHours?: string;
+   verified?: boolean;
 }
 
 
@@ -226,9 +423,712 @@ export const api = {
       return response.json();
    },
 
+   // Get single restaurant by ID
+   async getRestaurantById(id: number): Promise<Restaurant> {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.RESTAURANT_BY_ID(id)}`, {
+         method: 'GET',
+         headers: {
+            'Content-Type': 'application/json',
+         },
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to fetch restaurant' }));
+         throw new Error(error.message || 'Failed to fetch restaurant');
+      }
+
+      return response.json();
+   },
+
+   // Search restaurants with filters
+   async searchRestaurants(params: SearchRestaurantsParams = {}): Promise<SearchRestaurantsResponse> {
+      const queryParams = new URLSearchParams();
+
+      if (params.search) queryParams.append('search', params.search);
+      if (params.cuisineType) queryParams.append('cuisineType', params.cuisineType);
+      if (params.city) queryParams.append('city', params.city);
+      if (params.minRating !== undefined) queryParams.append('minRating', params.minRating.toString());
+      if (params.maxPriceRange !== undefined) queryParams.append('maxPriceRange', params.maxPriceRange.toString());
+      if (params.verifiedOnly !== undefined) queryParams.append('verifiedOnly', params.verifiedOnly.toString());
+      if (params.page) queryParams.append('page', params.page.toString());
+      if (params.limit) queryParams.append('limit', params.limit.toString());
+      if (params.sortBy) queryParams.append('sortBy', params.sortBy);
+      if (params.sortOrder) queryParams.append('sortOrder', params.sortOrder);
+
+      const url = `${API_BASE_URL}${API_ENDPOINTS.RESTAURANTS_SEARCH}?${queryParams.toString()}`;
+      const response = await fetch(url, {
+         method: 'GET',
+         headers: {
+            'Content-Type': 'application/json',
+         },
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to search restaurants' }));
+         throw new Error(error.message || 'Failed to search restaurants');
+      }
+
+      return response.json();
+   },
+
+   // Get verified restaurants
+   async getVerifiedRestaurants(): Promise<Restaurant[]> {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.RESTAURANTS_VERIFIED}`, {
+         method: 'GET',
+         headers: {
+            'Content-Type': 'application/json',
+         },
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to fetch verified restaurants' }));
+         throw new Error(error.message || 'Failed to fetch verified restaurants');
+      }
+
+      return response.json();
+   },
+
+   // Create restaurant (requires restaurant role)
+   async createRestaurant(data: CreateRestaurantData): Promise<Restaurant> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}${API_ENDPOINTS.RESTAURANTS}`, {
+         method: 'POST',
+         body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to create restaurant' }));
+         throw new Error(error.message || 'Failed to create restaurant');
+      }
+
+      return response.json();
+   },
+
+   // Update restaurant (requires ownership)
+   async updateRestaurant(id: number, data: UpdateRestaurantData): Promise<Restaurant> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}${API_ENDPOINTS.RESTAURANT_BY_ID(id)}`, {
+         method: 'PATCH',
+         body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to update restaurant' }));
+         throw new Error(error.message || 'Failed to update restaurant');
+      }
+
+      return response.json();
+   },
+
+   // Delete restaurant (requires ownership)
+   async deleteRestaurant(id: number): Promise<void> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}${API_ENDPOINTS.RESTAURANT_BY_ID(id)}`, {
+         method: 'DELETE',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to delete restaurant' }));
+         throw new Error(error.message || 'Failed to delete restaurant');
+      }
+   },
+
+   // Get my restaurants (restaurants owned by current user)
+   async getMyRestaurants(): Promise<Restaurant[]> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}${API_ENDPOINTS.RESTAURANTS}`, {
+         method: 'GET',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to fetch my restaurants' }));
+         throw new Error(error.message || 'Failed to fetch my restaurants');
+      }
+
+      // Backend returns all restaurants, we need to filter by owner
+      // For now, return all - backend should have endpoint for owner's restaurants
+      return response.json();
+   },
+
+   // Get comments by restaurant
+   async getCommentsByRestaurant(restaurantId: number): Promise<Comment[]> {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.COMMENTS_BY_RESTAURANT(restaurantId)}`, {
+         method: 'GET',
+         headers: {
+            'Content-Type': 'application/json',
+         },
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to fetch comments' }));
+         throw new Error(error.message || 'Failed to fetch comments');
+      }
+
+      return response.json();
+   },
+
+   // Create comment
+   async createComment(data: CreateCommentData): Promise<Comment> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}${API_ENDPOINTS.COMMENTS}`, {
+         method: 'POST',
+         body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to create comment' }));
+         throw new Error(error.message || 'Failed to create comment');
+      }
+
+      return response.json();
+   },
+
+   // Update comment
+   async updateComment(id: number, text: string): Promise<Comment> {
+      const { accessToken } = getStoredTokens();
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.COMMENT_BY_ID(id)}`, {
+         method: 'PATCH',
+         headers: {
+            'Content-Type': 'application/json',
+            ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+         },
+         body: JSON.stringify({ text }),
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to update comment' }));
+         throw new Error(error.message || 'Failed to update comment');
+      }
+
+      return response.json();
+   },
+
+   // Delete comment
+   async deleteComment(id: number): Promise<void> {
+      const { accessToken } = getStoredTokens();
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.COMMENT_BY_ID(id)}`, {
+         method: 'DELETE',
+         headers: {
+            'Content-Type': 'application/json',
+            ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+         },
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to delete comment' }));
+         throw new Error(error.message || 'Failed to delete comment');
+      }
+   },
+
+
+   // Get ratings by restaurant
+   async getRatingsByRestaurant(restaurantId: number): Promise<Rating[]> {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.RATINGS_BY_RESTAURANT(restaurantId)}`, {
+         method: 'GET',
+         headers: {
+            'Content-Type': 'application/json',
+         },
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to fetch ratings' }));
+         throw new Error(error.message || 'Failed to fetch ratings');
+      }
+
+      return response.json();
+   },
+
+   // Create rating
+   async createRating(data: CreateRatingData): Promise<Rating> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}${API_ENDPOINTS.RATINGS}`, {
+         method: 'POST',
+         body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to create rating' }));
+         throw new Error(error.message || 'Failed to create rating');
+      }
+
+      return response.json();
+   },
+
+   // Update rating
+   async updateRating(id: number, value: number): Promise<Rating> {
+      const { accessToken } = getStoredTokens();
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.RATING_BY_ID(id)}`, {
+         method: 'PATCH',
+         headers: {
+            'Content-Type': 'application/json',
+            ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+         },
+         body: JSON.stringify({ value }),
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to update rating' }));
+         throw new Error(error.message || 'Failed to update rating');
+      }
+
+      return response.json();
+   },
+
+   // Delete rating
+   async deleteRating(id: number): Promise<void> {
+      const { accessToken } = getStoredTokens();
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.RATING_BY_ID(id)}`, {
+         method: 'DELETE',
+         headers: {
+            'Content-Type': 'application/json',
+            ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+         },
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to delete rating' }));
+         throw new Error(error.message || 'Failed to delete rating');
+      }
+   },
+
+
+   // Get photos by restaurant
+   async getPhotosByRestaurant(restaurantId: number): Promise<RestaurantPhoto[]> {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.PHOTOS_BY_RESTAURANT(restaurantId)}`, {
+         method: 'GET',
+         headers: {
+            'Content-Type': 'application/json',
+         },
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to fetch photos' }));
+         throw new Error(error.message || 'Failed to fetch photos');
+      }
+
+      return response.json();
+   },
+
+
+   // Get all events
+   async getEvents(): Promise<Event[]> {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.EVENTS}`, {
+         method: 'GET',
+         headers: {
+            'Content-Type': 'application/json',
+         },
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to fetch events' }));
+         throw new Error(error.message || 'Failed to fetch events');
+      }
+
+      return response.json();
+   },
+
+   // Get event by ID
+   async getEventById(id: number): Promise<Event> {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.EVENT_BY_ID(id)}`, {
+         method: 'GET',
+         headers: {
+            'Content-Type': 'application/json',
+         },
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to fetch event' }));
+         throw new Error(error.message || 'Failed to fetch event');
+      }
+
+      return response.json();
+   },
+
+   // Create event
+   async createEvent(data: CreateEventData): Promise<Event> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}${API_ENDPOINTS.EVENTS}`, {
+         method: 'POST',
+         body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to create event' }));
+         throw new Error(error.message || 'Failed to create event');
+      }
+
+      return response.json();
+   },
+
+   // Update event
+   async updateEvent(id: string, data: UpdateEventData): Promise<Event> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/events/${id}`, {
+         method: 'PATCH',
+         body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to update event' }));
+         throw new Error(error.message || 'Failed to update event');
+      }
+
+      return response.json();
+   },
+
+   // Delete event
+   async deleteEvent(id: string): Promise<void> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/events/${id}`, {
+         method: 'DELETE',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to delete event' }));
+         throw new Error(error.message || 'Failed to delete event');
+      }
+   },
+
+
+   // Upload restaurant photo
+   async uploadPhoto(data: UploadPhotoData): Promise<RestaurantPhoto> {
+      const formData = new FormData();
+      formData.append('file', data.file);
+      formData.append('restaurantId', data.restaurantId.toString());
+
+      const { accessToken } = getStoredTokens();
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.PHOTOS_UPLOAD}`, {
+         method: 'POST',
+         headers: {
+            ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+         },
+         body: formData,
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to upload photo' }));
+         throw new Error(error.message || 'Failed to upload photo');
+      }
+
+      return response.json();
+   },
+
+   // Delete photo
+   async deletePhoto(id: number): Promise<void> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}${API_ENDPOINTS.PHOTO_BY_ID(id)}`, {
+         method: 'DELETE',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to delete photo' }));
+         throw new Error(error.message || 'Failed to delete photo');
+      }
+   },
+
+   // Set primary photo
+   async setPrimaryPhoto(id: number): Promise<RestaurantPhoto> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}${API_ENDPOINTS.PHOTO_SET_PRIMARY(id)}`, {
+         method: 'PATCH',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to set primary photo' }));
+         throw new Error(error.message || 'Failed to set primary photo');
+      }
+
+      return response.json();
+   },
 
    async authenticatedRequest(url: string, options: RequestInit = {}): Promise<Response> {
       return makeAuthenticatedRequest(`${API_BASE_URL}${url}`, options);
    },
-};
 
+
+   // Get all users (admin only)
+   async getAllUsers(): Promise<any[]> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/users`, {
+         method: 'GET',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to fetch users' }));
+         throw new Error(error.message || 'Failed to fetch users');
+      }
+
+      return response.json();
+   },
+
+   // Block user (admin only)
+   async blockUser(userId: number): Promise<any> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/users/${userId}/block`, {
+         method: 'PATCH',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to block user' }));
+         throw new Error(error.message || 'Failed to block user');
+      }
+
+      return response.json();
+   },
+
+   // Unblock user (admin only)
+   async unblockUser(userId: number): Promise<any> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/users/${userId}/unblock`, {
+         method: 'PATCH',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to unblock user' }));
+         throw new Error(error.message || 'Failed to unblock user');
+      }
+
+      return response.json();
+   },
+
+   // Delete user (admin only)
+   async deleteUser(userId: number): Promise<void> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/users/${userId}`, {
+         method: 'DELETE',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to delete user' }));
+         throw new Error(error.message || 'Failed to delete user');
+      }
+   },
+
+   // Change user role (admin only)
+   async changeUserRole(userId: number, role: string): Promise<any> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/users/${userId}/role`, {
+         method: 'PATCH',
+         body: JSON.stringify({ role }),
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to change user role' }));
+         throw new Error(error.message || 'Failed to change user role');
+      }
+
+      return response.json();
+   },
+
+   // Update user profile
+   async updateUser(userId: number, data: { firstName?: string; lastName?: string; email?: string }): Promise<User> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/users/${userId}`, {
+         method: 'PATCH',
+         body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Ažuriranje profila nije uspjelo' }));
+         throw new Error(error.message || 'Ažuriranje profila nije uspjelo');
+      }
+
+      return response.json();
+   },
+
+   // Change password
+   async changePassword(data: { oldPassword: string; newPassword: string }): Promise<{ message: string }> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/users/change-password`, {
+         method: 'PATCH',
+         body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Promjena lozinke nije uspjela' }));
+         throw new Error(error.message || 'Promjena lozinke nije uspjela');
+      }
+
+      return response.json();
+   },
+
+   // Request verification for a restaurant (restaurant owner only)
+   async requestVerification(restaurantId: number, notes?: string): Promise<any> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/verification/request`, {
+         method: 'POST',
+         body: JSON.stringify({ restaurantId, notes }),
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to request verification' }));
+         throw new Error(error.message || 'Failed to request verification');
+      }
+
+      return response.json();
+   },
+
+   // Get pending verification requests (admin only)
+   async getPendingVerifications(): Promise<any[]> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/verification/pending`, {
+         method: 'GET',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to fetch pending verifications' }));
+         throw new Error(error.message || 'Failed to fetch pending verifications');
+      }
+
+      return response.json();
+   },
+
+   // Approve verification request (admin only)
+   async approveVerification(id: number): Promise<any> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/verification/${id}/approve`, {
+         method: 'PATCH',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to approve verification' }));
+         throw new Error(error.message || 'Failed to approve verification');
+      }
+
+      return response.json();
+   },
+
+   // Reject verification request (admin only)
+   async rejectVerification(id: number, reason: string): Promise<any> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/verification/${id}/reject`, {
+         method: 'PATCH',
+         body: JSON.stringify({ rejectionReason: reason }),
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to reject verification' }));
+         throw new Error(error.message || 'Failed to reject verification');
+      }
+
+      return response.json();
+   },
+
+   // Get all comments (admin only)
+   async getAllComments(): Promise<any[]> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/comments`, {
+         method: 'GET',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to fetch comments' }));
+         throw new Error(error.message || 'Failed to fetch comments');
+      }
+
+      return response.json();
+   },
+
+   // Hide comment (admin only)
+   async hideComment(commentId: number): Promise<any> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/comments/${commentId}/hide`, {
+         method: 'PATCH',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to hide comment' }));
+         throw new Error(error.message || 'Failed to hide comment');
+      }
+
+      return response.json();
+   },
+
+   // Show comment (admin only)
+   async showComment(commentId: number): Promise<any> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/comments/${commentId}/show`, {
+         method: 'PATCH',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to show comment' }));
+         throw new Error(error.message || 'Failed to show comment');
+      }
+
+      return response.json();
+   },
+
+   // Get admin dashboard statistics
+   async getAdminDashboard(): Promise<any> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/admin/dashboard`, {
+         method: 'GET',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to fetch dashboard' }));
+         throw new Error(error.message || 'Failed to fetch dashboard');
+      }
+
+      return response.json();
+   },
+
+   // === NOTIFICATIONS ===
+
+   // Get all notifications for the current user
+   async getNotifications(): Promise<any[]> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/notifications`, {
+         method: 'GET',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to fetch notifications' }));
+         throw new Error(error.message || 'Failed to fetch notifications');
+      }
+
+      return response.json();
+   },
+
+   // Get unread notifications for the current user
+   async getUnreadNotifications(): Promise<any[]> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/notifications/unread`, {
+         method: 'GET',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to fetch unread notifications' }));
+         throw new Error(error.message || 'Failed to fetch unread notifications');
+      }
+
+      return response.json();
+   },
+
+   // Get unread notification count
+   async getUnreadNotificationCount(): Promise<{ count: number }> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/notifications/unread/count`, {
+         method: 'GET',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to fetch notification count' }));
+         throw new Error(error.message || 'Failed to fetch notification count');
+      }
+
+      return response.json();
+   },
+
+   // Mark a single notification as read
+   async markNotificationAsRead(notificationId: string): Promise<any> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/notifications/${notificationId}/read`, {
+         method: 'PATCH',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to mark notification as read' }));
+         throw new Error(error.message || 'Failed to mark notification as read');
+      }
+
+      return response.json();
+   },
+
+   // Mark all notifications as read
+   async markAllNotificationsAsRead(): Promise<any> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/notifications/read-all`, {
+         method: 'PATCH',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to mark all notifications as read' }));
+         throw new Error(error.message || 'Failed to mark all notifications as read');
+      }
+
+      return response.json();
+   },
+
+   // Delete a notification
+   async deleteNotification(notificationId: string): Promise<void> {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/notifications/${notificationId}`, {
+         method: 'DELETE',
+      });
+
+      if (!response.ok) {
+         const error = await response.json().catch(() => ({ message: 'Failed to delete notification' }));
+         throw new Error(error.message || 'Failed to delete notification');
+      }
+   },
+};

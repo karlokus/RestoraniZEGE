@@ -56,3 +56,9 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Ignoriraj sav sadržaj u uploads folderu
+uploads/restaurants/*
+
+# Ali nemoj ignorirati .gitkeep fajl (tako će folder ostati na Gitu)
+!uploads/restaurants/.gitkeep

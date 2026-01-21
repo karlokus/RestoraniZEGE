@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from "@nestjs/comm
 import { Repository } from "typeorm";
 import { Favorite } from "../entities/favorite.entity";
 import { InjectRepository } from "@nestjs/typeorm";
+import { User } from "src/users/entities/user.entity";
 
 
 @Injectable()
@@ -43,9 +44,9 @@ export class FavoritesService {
 
     public async removeFavorite(userId: number, restaurantId: number) {
         const favorite = await this.favoritesRepository.findOne({
-            where: { 
-                user: { id: userId }, 
-                restaurant: { id: restaurantId } 
+            where: {
+                user: { id: userId },
+                restaurant: { id: restaurantId }
             },
         });
 
@@ -54,5 +55,21 @@ export class FavoritesService {
         }
 
         return await this.favoritesRepository.remove(favorite);
+    }
+
+    /**
+     * Get all users who have favorited a specific restaurant
+     * Used for sending notifications when restaurant creates new events
+     */
+    public async getUsersByFavoritedRestaurant(restaurantId: number): Promise<User[]> {
+        const favorites = await this.favoritesRepository.find({
+            where: {
+                restaurant: { id: restaurantId },
+            },
+            relations: ['user'],
+        });
+
+        // Extract unique users from favorites
+        return favorites.map(fav => fav.user);
     }
 }

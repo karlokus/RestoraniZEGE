@@ -7,6 +7,7 @@ import { AuthProvider } from './contexts/AuthContext.tsx'
 import { FavoritesProvider } from './contexts/FavoritesContext.tsx'
 import { EventsProvider } from './contexts/EventsContext.tsx'
 import { NotificationsProvider } from './contexts/NotificationsContext.tsx'
+import { RestaurantsProvider } from './contexts/RestaurantsContext.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -15,7 +16,9 @@ createRoot(document.getElementById('root')!).render(
         <FavoritesProvider>
           <EventsProvider>
             <NotificationsProvider>
-              <App />
+              <RestaurantsProvider>
+                <App />
+              </RestaurantsProvider>
             </NotificationsProvider>
           </EventsProvider>
         </FavoritesProvider>
