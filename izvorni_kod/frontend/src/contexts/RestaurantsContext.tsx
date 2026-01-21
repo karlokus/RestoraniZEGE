@@ -84,14 +84,22 @@ export function RestaurantsProvider({ children }: { children: ReactNode }) {
    const loadRestaurants = useCallback(async () => {
       try {
          setLoading(true);
-         
+
          let backendSortBy = 'name';
          let backendOrder: 'ASC' | 'DESC' = 'ASC';
-         
+
          switch (filters.sortBy) {
             case 'rating':
             case 'recommended':
                backendSortBy = 'averageRating';
+               backendOrder = 'DESC';
+               break;
+            case 'priceAsc':
+               backendSortBy = 'priceRange';
+               backendOrder = 'ASC';
+               break;
+            case 'priceDesc':
+               backendSortBy = 'priceRange';
                backendOrder = 'DESC';
                break;
             case 'name':
@@ -107,6 +115,7 @@ export function RestaurantsProvider({ children }: { children: ReactNode }) {
             search: filters.searchQuery || undefined,
             cuisineType: filters.cuisineType !== 'all' ? filters.cuisineType : undefined,
             minRating: filters.ratingFilter !== 'all' ? parseFloat(filters.ratingFilter) : undefined,
+            maxPriceRange: filters.priceFilter !== null ? filters.priceFilter : undefined,
             verifiedOnly: true,
             page: currentPage,
             limit: itemsPerPage,
@@ -133,7 +142,7 @@ export function RestaurantsProvider({ children }: { children: ReactNode }) {
                longitude: r.longitude,
             };
          });
-         
+
          setRestaurants(mappedRestaurants);
          setFilteredRestaurants(mappedRestaurants);
          setPagination(response.meta);
@@ -146,7 +155,7 @@ export function RestaurantsProvider({ children }: { children: ReactNode }) {
       } finally {
          setLoading(false);
       }
-   }, [currentPage, itemsPerPage, filters.searchQuery, filters.cuisineType, filters.ratingFilter, filters.sortBy]);
+   }, [currentPage, itemsPerPage, filters.searchQuery, filters.cuisineType, filters.ratingFilter, filters.priceFilter, filters.sortBy]);
 
    // Učitaj restorane prilikom prvog renderiranja ili kad se promijene filteri/paginacija
    useEffect(() => {

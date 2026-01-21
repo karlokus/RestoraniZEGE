@@ -68,6 +68,7 @@ export interface SearchRestaurantsParams {
    cuisineType?: string;
    city?: string;
    minRating?: number;
+   maxPriceRange?: number;
    verifiedOnly?: boolean;
    page?: number;
    limit?: number;
@@ -447,6 +448,7 @@ export const api = {
       if (params.cuisineType) queryParams.append('cuisineType', params.cuisineType);
       if (params.city) queryParams.append('city', params.city);
       if (params.minRating !== undefined) queryParams.append('minRating', params.minRating.toString());
+      if (params.maxPriceRange !== undefined) queryParams.append('maxPriceRange', params.maxPriceRange.toString());
       if (params.verifiedOnly !== undefined) queryParams.append('verifiedOnly', params.verifiedOnly.toString());
       if (params.page) queryParams.append('page', params.page.toString());
       if (params.limit) queryParams.append('limit', params.limit.toString());

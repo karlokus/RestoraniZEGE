@@ -187,6 +187,7 @@ export class RestaurantsService {
             city,
             minRating,
             verifiedOnly,
+            maxPriceRange,
             page = 1,
             limit = 10,
             sortBy = 'name',
@@ -223,8 +224,13 @@ export class RestaurantsService {
             query.andWhere('restaurant.verified = :verified', { verified: true });
         }
 
+        // Filter po maksimalnom cjenovnom razredu
+        if (maxPriceRange !== undefined) {
+            query.andWhere('restaurant.priceRange <= :maxPriceRange', { maxPriceRange });
+        }
+
         // Sorting
-        const allowedSortFields = ['name', 'averageRating', 'createdAt'];
+        const allowedSortFields = ['name', 'averageRating', 'createdAt', 'priceRange'];
         const safeSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'name';
         query.orderBy(`restaurant.${safeSortBy}`, sortOrder);
 
