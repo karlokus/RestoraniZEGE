@@ -13,14 +13,14 @@ import chefImg from "../assets/chef.png";
 
 function Home() {
    const { user, isAuthenticated, logout } = useAuthContext();
-   const { isFavorite, favorites, favoriteRestaurants, loadFavoriteRestaurants, loadingRestaurants } = useFavoritesContext();
+   const { favorites, favoriteRestaurants, loadFavoriteRestaurants, loadingRestaurants } = useFavoritesContext();
    const { getUpcomingEvents } = useEventsContext();
    const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotificationsContext();
-   const { 
-      restaurants, 
-      loading, 
-      error, 
-      filters, 
+   const {
+      restaurants,
+      loading,
+      error,
+      filters,
       setSearchQuery,
       pagination,
       currentPage,
@@ -293,24 +293,24 @@ function Home() {
                                  getUpcomingEvents()
                                     .filter(event =>
                                        (event.title.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
-                                       event.restaurantName?.toLowerCase().includes(filters.searchQuery.toLowerCase())) &&
+                                          event.restaurantName?.toLowerCase().includes(filters.searchQuery.toLowerCase())) &&
                                        favorites.includes(event.restaurantId) // Prikaži samo događaje od omiljenih restorana
                                     )
                                     .length === 0 ? (
-                                       <div style={{ padding: '2rem', textAlign: 'center', gridColumn: '1 / -1' }}>
-                                          <p style={{ fontSize: '18px', color: '#666' }}>Nema nadolazećih događaja od vaših omiljenih restorana.</p>
-                                       </div>
-                                    ) : (
-                                       getUpcomingEvents()
-                                          .filter(event =>
-                                             (event.title.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+                                    <div style={{ padding: '2rem', textAlign: 'center', gridColumn: '1 / -1' }}>
+                                       <p style={{ fontSize: '18px', color: '#666' }}>Nema nadolazećih događaja od vaših omiljenih restorana.</p>
+                                    </div>
+                                 ) : (
+                                    getUpcomingEvents()
+                                       .filter(event =>
+                                          (event.title.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
                                              event.restaurantName?.toLowerCase().includes(filters.searchQuery.toLowerCase())) &&
-                                             favorites.includes(event.restaurantId)
-                                          )
-                                          .map((event) => (
-                                             <EventCard key={event.id} event={event} />
-                                          ))
-                                    )
+                                          favorites.includes(event.restaurantId)
+                                       )
+                                       .map((event) => (
+                                          <EventCard key={event.id} event={event} />
+                                       ))
+                                 )
                               )}
                            </div>
                         ) : activeFilter === 'favorites' ? (
@@ -321,7 +321,7 @@ function Home() {
                                  </div>
                               ) : favoriteRestaurants.length > 0 ? (
                                  favoriteRestaurants
-                                    .filter((restaurant: Restaurant) => 
+                                    .filter((restaurant: Restaurant) =>
                                        restaurant.name.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
                                        restaurant.cuisine.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
                                        restaurant.location.toLowerCase().includes(filters.searchQuery.toLowerCase())
