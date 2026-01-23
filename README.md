@@ -32,7 +32,7 @@ Projekt koristi sljedeće tehnologije:
 - Axios za API pozive
 - React Router za navigaciju
 
-## 📥 Instalacija i pokretanje projekta
+# Instalacija i pokretanje projekta
 
 Slijede upute kako klonirati repozitorij i pokrenuti backend i frontend dio aplikacije.
 
