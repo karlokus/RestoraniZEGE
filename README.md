@@ -7,8 +7,6 @@ Admin credentials:
 - email: admin@admin.com
 - password: Adm!ni!23
 
-Napravljene funkcionalnosti registracije i prijave te funkcionalnost dodavanja restorana u omiljene(favorite) restorane
-
 # Opis projekta
 Cilj našeg projekta je izrada web aplikacije koja će pomoći svima u Zagrebu u pronalasku restorana i hrane po njihovom ukusu.
 Bez obzira radi li se o turistu ili stanovniku grada, svima je zajedničko da, osim razgledavanja kulturnih znamenitosti i atraktivnih lokacija, žele i uživati u dobroj hrani.
