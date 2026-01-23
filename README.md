@@ -4,8 +4,8 @@
 [https://restoranizege-frontend.onrender.com/](https://restoranizege-frontend.onrender.com/)
 
 Admin credentials: 
-email: admin@admin.com
-password: Adm!ni!23
+- email: admin@admin.com
+- password: Adm!ni!23
 
 Napravljene funkcionalnosti registracije i prijave te funkcionalnost dodavanja restorana u omiljene(favorite) restorane
 
