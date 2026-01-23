@@ -8,7 +8,6 @@ export default function Profile() {
   const { user, logout, updateUser } = useAuthContext();
   const navigate = useNavigate();
 
-  // Edit profile modal state
   const [showEditModal, setShowEditModal] = useState(false);
   const [editFirstName, setEditFirstName] = useState('');
   const [editLastName, setEditLastName] = useState('');
@@ -16,7 +15,6 @@ export default function Profile() {
   const [editLoading, setEditLoading] = useState(false);
   const [editError, setEditError] = useState('');
 
-  // Change password modal state
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -189,7 +187,7 @@ export default function Profile() {
         </button>
       </section>
 
-      {/* Edit Profile Modal */}
+      {/* uredi profil */}
       {showEditModal && (
         <div className="modal-overlay" onClick={closeEditModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -239,7 +237,7 @@ export default function Profile() {
         </div>
       )}
 
-      {/* Change Password Modal */}
+      {/* promjena lozinke */}
       {showPasswordModal && (
         <div className="modal-overlay" onClick={closePasswordModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>

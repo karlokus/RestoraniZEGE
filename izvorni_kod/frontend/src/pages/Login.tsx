@@ -36,7 +36,7 @@ function Login() {
 
     try {
       const userData = await login({ email, password });
-      // Redirect based on user role
+      //preusmjerava usera ovisno o ulozi
       if (userData?.role === "admin") {
         navigate("/admin");
       } else if (userData?.role === "restaurant") {
@@ -56,7 +56,7 @@ function Login() {
     setGoogleLoading(true);
     try {
       const userData = await googleAuth({ token: credential });
-      // Redirect based on user role
+      //preusmjeri ovisno o ulozi
       if (userData?.role === "admin") {
         navigate("/admin");
       } else if (userData?.role === "restaurant") {

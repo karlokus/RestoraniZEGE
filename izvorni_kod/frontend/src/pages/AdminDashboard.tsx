@@ -5,7 +5,6 @@ import { useAuthContext } from "../contexts/AuthContext";
 import chefImg from "../assets/chef.png";
 import "../css/AdminDashboard.css";
 
-// Types
 interface User {
   id: number;
   firstName: string;
@@ -80,7 +79,6 @@ function AdminDashboard() {
   const [selectedVerification, setSelectedVerification] = useState<VerificationRequest | null>(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  // Data states
   const [verificationRequests, setVerificationRequests] = useState<VerificationRequest[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
@@ -88,11 +86,9 @@ function AdminDashboard() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
 
-  // Loading states
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch data on mount and tab change
   useEffect(() => {
     fetchData();
   }, [activeTab]);
@@ -103,13 +99,11 @@ function AdminDashboard() {
     
     try {
       if (activeTab === "verification") {
-        // Dohvati postojeće verification requests
         const pendingRequests = await api.getPendingVerifications();
         
-        // Dohvati sve restorane
         const allRestaurants = await api.getRestaurants();
         
-        // Filtriraj neverificirane restorane koji NEMAJU verification request
+        // filtrira neverificirane restorane koji nemaju verification request
         const restaurantIdsWithRequest = new Set(
           pendingRequests.map((req: VerificationRequest) => req.restaurant?.id)
         );
@@ -117,8 +111,8 @@ function AdminDashboard() {
         const unverifiedWithoutRequest = allRestaurants
           .filter((r: Restaurant) => !r.verified && !restaurantIdsWithRequest.has(r.id))
           .map((r: Restaurant) => ({
-            // Kreiraj "virtualni" verification request za prikaz
-            id: -r.id, // Negativan ID za razlikovanje
+            // kreiram "virtualni" verification request za prikaz
+            id: -r.id, // negativan ID za razlikovanje
             restaurant: {
               id: r.id,
               name: r.name,
@@ -131,15 +125,14 @@ function AdminDashboard() {
             },
             status: 'pending',
             createdAt: r.createdAt || new Date().toISOString(),
-            isVirtual: true, // Oznaka da je virtualni request
+            isVirtual: true, // oznaka da je virtualni request (ubacivanje u bazu)
           }));
         
-        // Kombiniraj i sortiraj
         const combined = [...pendingRequests, ...unverifiedWithoutRequest];
         setVerificationRequests(combined);
       } else if (activeTab === "users") {
         const data = await api.getAllUsers();
-        // Filter out admin users from the list
+        // Filtriraj admine iz liste
         setUsers(data.filter((user: User) => user.role !== "admin"));
       } else if (activeTab === "moderation") {
         // Dohvati sve restorane pa za svaki dohvati ratinge
@@ -195,14 +188,13 @@ function AdminDashboard() {
     navigate("/");
   };
 
-  // ==================== VERIFICATION ACTIONS ====================
   const handleApproveVerification = async (verification: VerificationRequest) => {
     try {
       if (verification.isVirtual) {
-        // Za virtualne requestove - direktno verificiraj restoran
+        // Za virtualne requestove (rucno ubaceni u bazu) - direktno verificiraj restoran
         await api.updateRestaurant(verification.restaurant.id, { verified: true });
       } else {
-        // Za prave verification requestove
+        // za prave verification requestove
         await api.approveVerification(verification.id);
       }
       setVerificationRequests(prev => prev.filter(v => v.id !== verification.id));
@@ -219,11 +211,10 @@ function AdminDashboard() {
     
     try {
       if (verification.isVirtual) {
-        // Za virtualne requestove - samo ukloni iz liste (restoran ostaje neverificiran)
-        // Opcionalno: moglo bi se implementirati slanje emaila vlasniku
+        // za virtualne requestove - samo ukloni iz liste (restoran ostaje neverificiran)
         alert("Restoran nije verificiran. Vlasnik će morati poslati novi zahtjev.");
       } else {
-        // Za prave verification requestove
+        // za prave verification requestove
         await api.rejectVerification(verification.id, reason);
         alert("Zahtjev za verifikaciju je odbijen.");
       }
@@ -238,7 +229,6 @@ function AdminDashboard() {
     if (!confirm("Jeste li sigurni da želite obrisati ovaj zahtjev?")) return;
     
     try {
-      // Note: If there's no delete endpoint, we just remove from UI
       setVerificationRequests(prev => prev.filter(v => v.id !== id));
       setSelectedVerification(null);
       alert("Zahtjev je uklonjen.");
@@ -247,7 +237,6 @@ function AdminDashboard() {
     }
   };
 
-  // ==================== USER ACTIONS ====================
   const handleBlockUser = async (userId: number) => {
     try {
       await api.blockUser(userId);
@@ -308,7 +297,6 @@ function AdminDashboard() {
     }
   };
 
-  // ==================== REVIEW/RATING ACTIONS ====================
   const handleDeleteReview = async (review: ReviewItem) => {
     if (!confirm("Jeste li sigurni da želite obrisati ovu recenziju?")) return;
     
@@ -784,7 +772,6 @@ function AdminDashboard() {
 
   return (
     <div className="admin-dashboard">
-      {/* Header - Moderan dizajn kao Dashboard */}
       <header className="admin-dashboard-header">
         <div className="dashboard-header-content">
           <Link to="/" className="dashboard-logo">
@@ -802,10 +789,8 @@ function AdminDashboard() {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="admin-main">
         <div className="admin-container">
-          {/* Tabs */}
           <div className="admin-tabs">
             <button
               className={`tab-btn ${activeTab === "verification" ? "active" : ""}`}
@@ -851,7 +836,6 @@ function AdminDashboard() {
             </button>
           </div>
 
-          {/* Tab Content */}
           <div className="admin-content">
             {activeTab === "verification" && renderVerificationTab()}
             {activeTab === "users" && renderUsersTab()}

@@ -21,14 +21,14 @@ function Pagination({
    const isFirstRender = useRef(true);
    const prevPage = useRef(currentPage);
 
-   // Ne prikazuj paginaciju ako nema stranica
+   // ne prikazuj paginaciju ako nema stranica
    if (totalPages <= 1) {
       return null;
    }
 
    // Scroll na vrh kad se stranica promijeni
    useEffect(() => {
-      // Preskoči prvi render
+      // preskoči prvi render
       if (isFirstRender.current) {
          isFirstRender.current = false;
          prevPage.current = currentPage;

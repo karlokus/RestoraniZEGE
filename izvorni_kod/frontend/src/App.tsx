@@ -24,7 +24,7 @@ function App() {
         <Route path='/register' element={<Register />} />
         <Route path='/register-restaurant' element={<RegisterRestaurant />} />
         
-        {/* Zaštićene rute - samo ulogirani korisnici */}
+        {/* samo ulogirani korisnici */}
         <Route path='/profile' element={
           <ProtectedRoute>
             <Profile />
@@ -32,7 +32,7 @@ function App() {
         } />
         <Route path='/filter' element={<Filter />} />
         
-        {/* Restaurant owner dashboard routes - samo za vlasnike restorana */}
+        {/* samo za vlasnike restorana */}
         <Route path='/dashboard' element={
           <ProtectedRoute allowedRoles={['restaurant', 'admin']}>
             <Dashboard />

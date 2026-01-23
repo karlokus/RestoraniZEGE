@@ -8,16 +8,16 @@ interface ProtectedRouteProps {
 }
 
 /**
- * ProtectedRoute - Zaštićena ruta koja provjerava autentikaciju i autorizaciju
+ * ProtectedRoute - zaštićena ruta koja provjerava autentikaciju i autorizaciju
  * 
- * @param children - Komponenta koja se prikazuje ako korisnik ima pristup
- * @param allowedRoles - Lista dozvoljenih uloga (ako nije definirano, samo provjerava autentikaciju)
- * @param redirectTo - Ruta na koju se preusmjerava ako nema pristup (default: '/login' ili '/')
+ * @param children - komponenta koja se prikazuje ako korisnik ima pristup
+ * @param allowedRoles - lista dozvoljenih uloga za pristup ruti
+ * @param redirectTo - ruta na koju se preusmjerava ako nema pristup
  */
 function ProtectedRoute({ children, allowedRoles, redirectTo }: ProtectedRouteProps) {
   const { user, isAuthenticated, loading } = useAuthContext();
 
-  // Dok se učitava, prikaži loading
+// prikaz loadinga dok se ne ucita stanje
   if (loading) {
     return (
       <div style={{ 
@@ -32,20 +32,20 @@ function ProtectedRoute({ children, allowedRoles, redirectTo }: ProtectedRoutePr
     );
   }
 
-  // Ako korisnik nije ulogiran, preusmjeri na login
+  // ako korisnik nije ulogiran, preusmjeri na login
   if (!isAuthenticated || !user) {
     return <Navigate to={redirectTo || '/login'} replace />;
   }
 
-  // Ako su definirane dozvoljene uloge, provjeri ima li korisnik odgovarajuću ulogu
+  // provjeri ima li korisnik odgovarajuću ulogu
   if (allowedRoles && allowedRoles.length > 0) {
     if (!allowedRoles.includes(user.role)) {
-      // Korisnik nema dozvoljenu ulogu - preusmjeri na početnu stranicu
+      //user nema dozvoljenu ulogu - preusmjeri na početnu stranicu
       return <Navigate to={redirectTo || '/'} replace />;
     }
   }
 
-  // Korisnik ima pristup
+  // user ima pristup
   return <>{children}</>;
 }
 

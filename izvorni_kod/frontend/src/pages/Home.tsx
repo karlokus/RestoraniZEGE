@@ -34,7 +34,7 @@ function Home() {
    const hideTimer = useRef<number | null>(null);
    const notifTimer = useRef<number | null>(null);
 
-   // Učitaj favorite restorane kad se promijeni filter na 'favorites'
+   // ucitaj favorite restorane kad se promijeni filter na 'favorites'
    useEffect(() => {
       if (activeFilter === 'favorites') {
          loadFavoriteRestaurants();
@@ -53,7 +53,6 @@ function Home() {
 
    const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-      // Pretraga se automatski vrši preko konteksta
    }
 
    const handleLogout = async () => {
@@ -190,7 +189,6 @@ function Home() {
                               ♥
                            </button>
                         )}
-                        {/* maknuta ikona avatara za prijavljenog korisnika */}
                         <div
                            className="user-dropdown"
                            onMouseEnter={handleMouseEnter}

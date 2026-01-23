@@ -5,7 +5,7 @@ import "leaflet/dist/leaflet.css";
 import "../css/MapView.css";
 import type { Restaurant } from "./RestaurantCard";
 
-// Fix za default ikone u Leafletu (potrebno jer Webpack/Vite ne učitava ikone automatski)
+// fix za default ikone u Leafletu (potrebno jer Webpack/Vite ne učitava ikone automatski)
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
    iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
@@ -20,7 +20,7 @@ interface MapViewProps {
    onMarkerHover?: (restaurantId: number | null) => void;
 }
 
-// Komponenta za centriranje i zoom na restorane
+// komponenta za centriranje i zoom na restorane
 function MapUpdater({ restaurants }: { restaurants: Restaurant[] }) {
    const map = useMap();
    const prevRestaurantsRef = useRef<Restaurant[]>([]);
@@ -28,14 +28,14 @@ function MapUpdater({ restaurants }: { restaurants: Restaurant[] }) {
    useEffect(() => {
       if (restaurants.length === 0) return;
 
-      // Filtriraj restorane koji imaju validne koordinate
+      // filtriraj restorane koji imaju validne koordinate
       const restaurantsWithCoords = restaurants.filter(
          (r) => r.latitude != null && r.longitude != null
       );
 
       if (restaurantsWithCoords.length === 0) return;
 
-      // Provjeri je li se lista restorana promijenila
+      //provjera je li se lista restorana promijenila
       const hasChanged =
          prevRestaurantsRef.current.length !== restaurantsWithCoords.length ||
          prevRestaurantsRef.current.some((prev, i) => prev.id !== restaurantsWithCoords[i]?.id);
@@ -43,12 +43,12 @@ function MapUpdater({ restaurants }: { restaurants: Restaurant[] }) {
       if (hasChanged) {
          prevRestaurantsRef.current = restaurantsWithCoords;
 
-         // Kreiraj bounds od svih restorana
+         // kreiraj bounds od svih restorana
          const bounds = L.latLngBounds(
             restaurantsWithCoords.map((r) => [r.latitude!, r.longitude!])
          );
 
-         // Prilagodi mapu da prikaže sve restorane, ali ostani unutar Zagreba
+         // prilagodi mapu da prikaze sve restorane, ali ostani unutar Zagreba
          map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
       }
    }, [restaurants, map]);
@@ -62,21 +62,20 @@ const MapView: React.FC<MapViewProps> = ({
    onMarkerClick,
    onMarkerHover
 }) => {
-   // Koordinate centra Zagreba
    const zagrebCenter: [number, number] = [45.8150, 15.9819];
 
-   // Bounds za Zagreb (prilagođeno da pokriva grad)
+   // prilagođeno da pokriva Zagreb)
    const zagrebBounds: L.LatLngBoundsExpression = [
       [45.7, 15.85],  // Southwest corner
       [45.88, 16.1]   // Northeast corner
    ];
 
-   // Filtriraj restorane koji imaju koordinate
+   // filtriraj restorane koji imaju koordinate
    const restaurantsWithLocation = restaurants.filter(
       (r) => r.latitude != null && r.longitude != null
    );
 
-   // Kreiraj custom ikonu za hover stanje
+   // ikona za hover stanje
    const createCustomIcon = (isHovered: boolean) => {
       return L.divIcon({
          className: 'custom-marker',

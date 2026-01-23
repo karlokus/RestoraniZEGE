@@ -53,9 +53,9 @@ function RegisterRestaurant() {
         lastName,
         email,
         password,
-        role: "restaurant", // Restaurant owner role
+        role: "restaurant", // uloga vlasnika
       });
-      // After successful registration, redirect to create restaurant page
+      // nako nregistracije preusmjeri na kreiranje restorana
       navigate("/dashboard/create-restaurant");
     } catch (err: any) {
       setError(err.message || "Registracija nije uspjela. Pokušajte ponovno.");
