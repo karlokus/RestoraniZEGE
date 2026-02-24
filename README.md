@@ -78,11 +78,11 @@ CLOUDINARY_CLOUD_NAME=your_cloudinary_name
 CLOUDINARY_API_KEY=your_cloudinary_api_key
 CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_SECURE=false
-SMTP_USER=restoranizege@gmail.com
-SMTP_PASS=uynv ygnv lxcm alrr
+SMTP_HOST=your_smtp_name
+SMTP_PORT=your_smtp_port
+SMTP_SECURE=true/false
+SMTP_USER=your_smtp_user_email
+SMTP_PASS=your_smtp_pass
 EMAIL_FROM=RestoraniZEGE <restoranizege@gmail.com>
 ```
 
