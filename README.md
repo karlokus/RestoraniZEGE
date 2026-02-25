@@ -2,6 +2,7 @@
 
 # Deploy
 [https://restoranizege-frontend.onrender.com/](https://restoranizege-frontend.onrender.com/)
+
 Baza trenutačno suspendana(zaustavljena) na Renderu. Za pristup aplikaciji javite se nekom članu tima.
 
 Admin credentials: 
