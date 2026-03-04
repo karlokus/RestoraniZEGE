@@ -3,7 +3,7 @@
 # Deploy
 [https://restoranizege-frontend.onrender.com/](https://restoranizege-frontend.onrender.com/)
 
-Baza trenutačno suspendana(zaustavljena) na Renderu. Za pristup aplikaciji javite se nekom članu tima.
+Baza i backend dio projekta trenutačno suspendani(zaustavljeni) na Renderu. Za pristup aplikaciji javite se putam maila nekom članu tima.
 
 Admin credentials: 
 - email: admin@admin.com
